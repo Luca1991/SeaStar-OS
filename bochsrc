@@ -1,0 +1,30 @@
+config_interface: textconfig
+display_library : x, options= gui_debug
+port_e9_hack: enabled=1 
+romimage: file=/usr/share/bochs/BIOS-bochs-latest#, address=0xf0000
+megs: 32
+vgaromimage: file=/usr/share/vgabios/vgabios.bin
+floppya: 1_44=/dev/fd0, status=inserted
+ata0: enabled=1, ioaddr1=0x1f0, ioaddr2=0x3f0, irq=14
+ata1: enabled=0, ioaddr1=0x170, ioaddr2=0x370, irq=15
+ata2: enabled=0, ioaddr1=0x1e8, ioaddr2=0x3e0, irq=11
+ata3: enabled=0, ioaddr1=0x168, ioaddr2=0x360, irq=9
+ata0-slave: type=cdrom, path="/home/luca/Scrivania/OS/OS.iso", status=inserted
+
+boot: cdrom
+ cpu:count=1,ips=1000000
+#ips: 1000000
+floppy_bootsig_check: disabled=0
+log: /dev/stdout
+panic: action=ask
+error: action=report
+info: action=report
+debug: action=ignore
+debugger_log: -
+com1: enabled=1, dev=/dev/ttyS0
+vga: update_freq = 60
+keyboard_serial_delay: 250
+keyboard_paste_delay: 100000
+mouse: enabled=0
+private_colormap: enabled=0
+
