@@ -16,18 +16,20 @@ Task critici (da fixare nelle prossime 24/48 ore)
 - Gestione degli interrupt migliore (scrivere uno stub in asm per tutti gli interrupt)
 - Librerie standard da migliorare e pulire (molte delle quali sono state prese dal web
 e richiedono qualche ora di pulizia e ottimizzazione)
-- convertire build script in makefile (purtroppo attualmente l'OS è compilabile solo
-con il buildscript, occorre scrivere un makefile adeguato)
 - usando la funzione kernelPrintf, il wildcard %s NON VERRA' ESEGUITO CORRETTAMENTE
 (questo e' un bug critico da fixare il prima possibile)
 
 
 ATTENZIONE: i problemi presenti nel codice sono accompagnati da un commento FIXME
 
-NOTA: per compilare l'os occorre avere il compilatore i586-elf-gcc in /opt/cross/
-o editare lo build.sh script !!!
+NOTA: per compilare l'os occorre avere il compilatore i586-elf-gcc in path!
 
 Luca D'Amico
 
 PS: I suggerimenti e i commenti sono ben accetti !! Se volete aiutarmi speditemi 
 una mail.
+
+Special Thanks:
+Mike (Neon) for his great os-dev tutorials series
+^Inuyasha^ (Ivan) per tutti i consigli datomi su IRC
+
