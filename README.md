@@ -1,7 +1,7 @@
 SeaStar OS
 
-STATO ATTUALE: Interrupt Hardware Funzionanti
-PROSSIMO TASK: Gestione della memoria
+STATO ATTUALE: Gestore della memoria fisica funzionante
+PROSSIMO TASK: Gestione della memoria virtuale
 
 SeaStar OS è un sistema operativo scritto da 0, verrà presentato come tesi di laurea
 ed è stato scritto per scopi didattici e per capire in dettaglio come funziona un
@@ -30,6 +30,8 @@ PS: I suggerimenti e i commenti sono ben accetti !! Se volete aiutarmi speditemi
 una mail.
 
 Special Thanks:
+
 Mike (Neon) for his great os-dev tutorials series
-^Inuyasha^ (Ivan) per tutti i consigli datomi su IRC
+
+^Inuyasha^ (Ivan Gualandri) per tutti i consigli datomi su IRC
 

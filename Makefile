@@ -20,6 +20,7 @@ all:
 	$(CC) $(CFLAGS) -o $(ODIR)/pit.o ./Arch/x86/Hal/pit.c
 	$(CC) $(CFLAGS) -o $(ODIR)/exception.o ./Kernel/exception.c
 	$(CC) $(CFLAGS) -o $(ODIR)/panic.o ./Kernel/panic.c
+	$(CC) $(CFLAGS) -o $(ODIR)/pmm.o ./Kernel/pmm.c
 
 # Build ASM files
 	nasm -f elf ./Kernel/asm/bootstrap.asm -o $(ODIR)/bootstrap.o

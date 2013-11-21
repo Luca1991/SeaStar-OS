@@ -1,11 +1,21 @@
+#include <bootinfo.h>
 #include <Hal.h>
 #include "KernelDisplay.h"
 #include "exception.h"
+#include "pmm.h"
 
 
-
-void kmain (void* MultibootStructure)
+void kmain (multiboot_info_t* MultibootStructure)
 {
+
+	extern  uint32_t end; // Trick from bootstrap / linking script to get the kernel end addr
+
+	
+	
+	uint32_t kernelSize=(int)&end;
+	kernelSize -= 0x100000; // Real Kernel Size
+	
+
 
 
 	hal_initialize ();
@@ -38,6 +48,8 @@ void kmain (void* MultibootStructure)
 	kernelGotoXY (0,0);
 	kernelSetColor (0x1a);
 	kernelPrintf (" SeaStar OS Preparing to boot...                      ");
+        
+	 /*
 	kernelGotoXY (0,1);
 	kernelSetColor (0x0f); //b1
 	kernelPrintf (" Benvenuto SeaStar OS - Programmato da Luca D'Amico\n");
@@ -66,6 +78,55 @@ void kmain (void* MultibootStructure)
 		kernelGotoXY (0,15);
 		kernelPrintf (" Current tick count: %i", get_tick_count());
 
+	}*/
+
+
+	kernelSetColor (0x0f);
+
+	//! get memory size in KB
+	uint32_t memSize = MultibootStructure->mem_lower + MultibootStructure->mem_upper; 
+
+	// Init Physical Memory Manager
+	pmm_init (memSize,0x100000+kernelSize*256);
+
+	kernelPrintf("\nPhysical Memory Manager initialized\nwith %i KB physical memory; memLo: %i memHi: %i\n\n",
+		memSize,MultibootStructure->mem_lower ,MultibootStructure->mem_upper);
+
+
+	kernelPrintf ("Physical Memory Manager is running:\n");
+	memory_map_t*	region = (memory_map_t*)  MultibootStructure->mmap_addr;
+	int i;
+	for (i=0; i<15; ++i) {
+
+		// if region type > 4 it is reserved (sanity check)
+		if (region[i].type>4)
+			region[i].type=2; // Type 2 = Reserved
+
+		// if start address is 0 there is no more entries
+		if (i>0 && region[i].base_addr_low==0)
+			break;
+
+		
+		kernelPrintf ("Memory Region %i: Initial addr: 0x%x%x Size in bytes: 0x%x%x type: %i \n", i, 
+			region[i].base_addr_high, region[i].base_addr_low,
+			region[i].length_high,region[i].length_low,
+			region[i].type);
+
+		// if region[i] is type 1, then it is available memory.. just initialize the region for use
+		if (region[i].type==1)
+			pmm_init_region (region[i].base_addr_low, region[i].length_low);
 	}
+
+
+	// deinit the region of memory that the kernel is using
+	pmm_deinit_region (0x100000, kernelSize*256);
+
+
+
+	kernelPrintf ("\npmm regions initialized: %i allocation blocks;\nused or reserved blocks: %i\nfree blocks: %i\n",
+	pmm_get_block_count (),  pmm_get_used_block_count (), pmm_get_free_block_count () );
+
+	kernelPrintf("Kernel Size %d ",kernelSize);
+
 
 }

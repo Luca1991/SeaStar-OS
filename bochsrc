@@ -1,5 +1,5 @@
 config_interface: textconfig
-display_library : x, options= gui_debug
+display_library : sdl#, options= gui_debug
 port_e9_hack: enabled=1 
 romimage: file=/usr/share/bochs/BIOS-bochs-latest#, address=0xf0000
 megs: 32
@@ -9,7 +9,7 @@ ata0: enabled=1, ioaddr1=0x1f0, ioaddr2=0x3f0, irq=14
 ata1: enabled=0, ioaddr1=0x170, ioaddr2=0x370, irq=15
 ata2: enabled=0, ioaddr1=0x1e8, ioaddr2=0x3e0, irq=11
 ata3: enabled=0, ioaddr1=0x168, ioaddr2=0x360, irq=9
-ata0-slave: type=cdrom, path="/home/luca/Scrivania/OS/OS.iso", status=inserted
+ata0-slave: type=cdrom, path="./SeaStar.iso", status=inserted
 
 boot: cdrom
  cpu:count=1,ips=1000000
