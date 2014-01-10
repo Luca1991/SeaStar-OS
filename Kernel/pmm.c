@@ -183,4 +183,11 @@ uint32_t pmm_get_block_size(){
 	return PMM_BLOCK_SIZE;
 }
 
+uint32_t pmm_is_paging(){
+	uint32_t res = 0;
+	res=pmm_is_paging_asm();
+	return (res & 0x80000000) ? 0 : 1 ;
+
+}
+
 

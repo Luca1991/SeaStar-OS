@@ -3,6 +3,7 @@
 #include "KernelDisplay.h"
 #include "exception.h"
 #include "pmm.h"
+#include "vmm.h"
 
 
 void kmain (multiboot_info_t* MultibootStructure)
@@ -87,20 +88,23 @@ void kmain (multiboot_info_t* MultibootStructure)
 	uint32_t memSize = MultibootStructure->mem_lower + MultibootStructure->mem_upper; 
 
 	// Init Physical Memory Manager
-	pmm_init (memSize,0x100000+kernelSize*256);
-
+	pmm_init (memSize, 0x100000+kernelSize*256);
+	
 	kernelPrintf("\nPhysical Memory Manager initialized\nwith %i KB physical memory; memLo: %i memHi: %i\n\n",
 		memSize,MultibootStructure->mem_lower ,MultibootStructure->mem_upper);
+
 
 
 	kernelPrintf ("Physical Memory Manager is running:\n");
 	memory_map_t*	region = (memory_map_t*)  MultibootStructure->mmap_addr;
 	int i;
-	for (i=0; i<15; ++i) {
+
+	for (i=0; i<10; ++i) {
 
 		// if region type > 4 it is reserved (sanity check)
 		if (region[i].type>4)
-			region[i].type=2; // Type 2 = Reserved
+			break;
+//			region[i].type=2; // Type 2 = Reserved
 
 		// if start address is 0 there is no more entries
 		if (i>0 && region[i].base_addr_low==0)
@@ -126,7 +130,20 @@ void kmain (multiboot_info_t* MultibootStructure)
 	kernelPrintf ("\npmm regions initialized: %i allocation blocks;\nused or reserved blocks: %i\nfree blocks: %i\n",
 	pmm_get_block_count (),  pmm_get_used_block_count (), pmm_get_free_block_count () );
 
-	kernelPrintf("Kernel Size %d ",kernelSize);
+	kernelPrintf("Kernel Size %d \n",kernelSize);
+
+
+	
+	vmm_initialize ();
+
+	int ok = pmm_is_paging();
+	if (ok==0)
+		kernelPrintf("Paging ENABLED!!!!!! \n");
+	
+
+
+
+	while(1);
 
 
 }

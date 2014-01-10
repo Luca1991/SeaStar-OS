@@ -21,11 +21,26 @@ all:
 	$(CC) $(CFLAGS) -o $(ODIR)/exception.o ./Kernel/exception.c
 	$(CC) $(CFLAGS) -o $(ODIR)/panic.o ./Kernel/panic.c
 	$(CC) $(CFLAGS) -o $(ODIR)/pmm.o ./Kernel/pmm.c
+	$(CC) $(CFLAGS) -o $(ODIR)/vmm.o ./Kernel/vmm.c
+	$(CC) $(CFLAGS) -o $(ODIR)/vmm_pde.o ./Kernel/vmm_pde.c
+	$(CC) $(CFLAGS) -o $(ODIR)/vmm_pte.o ./Kernel/vmm_pte.c
 
 # Build ASM files
 	nasm -f elf ./Kernel/asm/bootstrap.asm -o $(ODIR)/bootstrap.o
+
 	nasm -f elf ./Arch/x86/Hal/asm/i86_pit_irq.asm -o $(ODIR)/i86_pit_irq.o
 	nasm -f elf ./Arch/x86/Hal/asm/gdtfix.asm -o $(ODIR)/gdtfix.o
+	nasm -f elf ./Arch/x86/Hal/asm/i86_cpu_flush_caches.asm -o $(ODIR)/i86_cpu_flush_caches.o
+	nasm -f elf ./Arch/x86/Hal/asm/i86_cpu_flush_caches_write.asm -o $(ODIR)/i86_cpu_flush_caches_write.o
+	nasm -f elf ./Arch/x86/Hal/asm/i86_cpu_flush_tlb_entry.asm -o $(ODIR)/i86_cpu_flush_tlb_entry.o
+
+
+
+	nasm -f elf ./Kernel/asm/pmm_paging_enable.asm -o $(ODIR)/pmm_paging_enable.o
+	nasm -f elf ./Kernel/asm/pmm_is_paging_asm.asm -o $(ODIR)/pmm_is_paging_asm.asm.o
+	nasm -f elf ./Kernel/asm/pmm_load_PDBR.asm -o $(ODIR)/pmm_load_PDBR.o
+	nasm -f elf ./Kernel/asm/pmm_get_PDBR.asm -o $(ODIR)/pmm_get_PDBR.o
+
 
 # Link 
 	$(LD) -T linker.ld $(ODIR)/*.o

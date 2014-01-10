@@ -1,7 +1,7 @@
 SeaStar OS
 
-STATO ATTUALE: Gestore della memoria fisica funzionante
-PROSSIMO TASK: Gestione della memoria virtuale
+STATO ATTUALE: Gestore della memoria virtuale funzionante
+PROSSIMO TASK: Implementazione driver tastiera
 
 SeaStar OS è un sistema operativo scritto da 0, verrà presentato come tesi di laurea
 ed è stato scritto per scopi didattici e per capire in dettaglio come funziona un
@@ -31,7 +31,7 @@ una mail.
 
 Special Thanks:
 
-Mike (Neon) for his great os-dev tutorials series
+Neon (Mike) for his great os-dev tutorials series
 
 ^Inuyasha^ (Ivan Gualandri) per tutti i consigli datomi su IRC
 

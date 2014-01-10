@@ -21,6 +21,7 @@ extern void gdt_fix();
 static void gdt_install(){
 	asm ("lgdt (%0)": :"m"(_gdtr));
 	gdt_fix();
+
 }
 
 
