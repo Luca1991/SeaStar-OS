@@ -1,9 +1,121 @@
 #include <bootinfo.h>
 #include <Hal.h>
+#include <string.h>
 #include "KernelDisplay.h"
 #include "exception.h"
 #include "pmm.h"
 #include "vmm.h"
+#include <drivers/keyboard_driver.h>
+
+
+
+
+void sleep (int ms){
+	int ticks = ms + get_tick_count();
+	while(ticks > get_tick_count());
+}
+
+KEYCODE getch(){
+	KEYCODE key = KEY_UNKNOWN;
+
+	while(key==KEY_UNKNOWN)
+		key = kkeyboard_get_last_key();
+
+	kkeyboard_discard_last_key();
+	return key;
+}
+
+void cmd(){
+	kernelSetColor (0x1a);
+	kernelPrintf("\nRoot@SeaStar#-Command>");
+	kernelSetColor (0x0f);
+	kernelPrintf(" ");
+}
+
+void get_cmd(char* buf,int n){
+	cmd();
+	KEYCODE key = KEY_UNKNOWN;
+	int BufChar;
+
+	int i = 0;
+	while(i<n){
+		BufChar = 1;
+		key = getch();
+
+		if(key == KEY_RETURN)
+			break;
+	
+		if(key == KEY_BACKSPACE){
+			BufChar = 0;
+			if(i>0){
+				unsigned x,y;
+				kernelGetXY(&x,&y);
+				if(x>0)
+					kernelGotoXY (--x,y);
+				else{
+					y--;
+					x = 80;
+				}
+	
+				kernelPutc(' ');
+				kernelGotoXY(x,y);
+				i--;
+			}
+
+		}	
+		if(BufChar==1){
+			char c = kkeyboard_key_to_ascii(key);
+			if ((c != 0) && (key != 0x1001)){
+				kernelPutc(c);
+				buf[i++] = c;
+			}	
+		}
+		sleep(10);
+	}
+	buf[i] = '\0';
+}
+
+int run_cmd(char* cmd_buf){
+	if(strcmp(cmd_buf,"halt")==0){
+		kernelPuts("\nSeaStar OS Halted. You can now shoutdown your computer");
+		return 1;
+	}
+
+	else if(strcmp(cmd_buf,"cls")==0){
+		kernelClrScr(0x0f);
+	}
+	
+	else if(strcmp (cmd_buf,"help") == 0) {
+		kernelPuts("\nBenvenuto sull'help! Questa parte e' ancora da scrivere ^^");
+	}
+	
+	else{
+		kernelPrintf("\nUnknown command");
+	}
+	
+	return 0;
+
+}
+
+void run(){
+	char cmd_buf[100];
+
+	while(1){
+		get_cmd(cmd_buf,98);
+	
+
+		if(run_cmd(cmd_buf)==1)
+			break;
+	}
+}
+
+
+
+
+
+
+
+
 
 
 void kmain (multiboot_info_t* MultibootStructure)
@@ -90,12 +202,12 @@ void kmain (multiboot_info_t* MultibootStructure)
 	// Init Physical Memory Manager
 	pmm_init (memSize, 0x100000+kernelSize*256);
 	
-	kernelPrintf("\nPhysical Memory Manager initialized\nwith %i KB physical memory; memLo: %i memHi: %i\n\n",
+	kernelPrintf("\nPhysical Memory Manager initialized\nwith %i KB physical memory; memLo: %i memHi: %i\n",
 		memSize,MultibootStructure->mem_lower ,MultibootStructure->mem_upper);
 
 
 
-	kernelPrintf ("Physical Memory Manager is running:\n");
+//	kernelPrintf ("Physical Memory Manager is running:\n");
 	memory_map_t*	region = (memory_map_t*)  MultibootStructure->mmap_addr;
 	int i;
 
@@ -104,18 +216,18 @@ void kmain (multiboot_info_t* MultibootStructure)
 		// if region type > 4 it is reserved (sanity check)
 		if (region[i].type>4)
 			break;
-//			region[i].type=2; // Type 2 = Reserved
+
 
 		// if start address is 0 there is no more entries
 		if (i>0 && region[i].base_addr_low==0)
 			break;
 
 		
-		kernelPrintf ("Memory Region %i: Initial addr: 0x%x%x Size in bytes: 0x%x%x type: %i \n", i, 
+/*		kernelPrintf ("Memory Region %i: Initial addr: 0x%x%x Size in bytes: 0x%x%x type: %i \n", i, 
 			region[i].base_addr_high, region[i].base_addr_low,
 			region[i].length_high,region[i].length_low,
 			region[i].type);
-
+*/
 		// if region[i] is type 1, then it is available memory.. just initialize the region for use
 		if (region[i].type==1)
 			pmm_init_region (region[i].base_addr_low, region[i].length_low);
@@ -140,10 +252,13 @@ void kmain (multiboot_info_t* MultibootStructure)
 	if (ok==0)
 		kernelPrintf("Paging ENABLED!!!!!! \n");
 	
-
-
+	
+	kkeyboard_install(33);
+	kernelPrintf("Keyboard Driver Installed.. Running SeaShell.... \n");
+	run();
 
 	while(1);
 
 
 }
+

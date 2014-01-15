@@ -1,38 +1,84 @@
 #include <stdarg.h>
+#include <Hal.h>
 #include <string.h>
 #include "KernelDisplay.h"
 
 
 // ATTENTION: Some systems may require 0xB0000 instead of 0xB8000 !!!
 #define VID_MEMORY	0xB8000
-
+uint16_t *video_memory = (uint16_t *)0xB8000;
 
 static unsigned int _xPos=0, _yPos=0;
-static unsigned _startX=0, _startY=0;
 
 static unsigned _color=0; // current color
+
+void kernelUpdateCursor(int x,int y){
+	uint16_t cursorLocation = y * 80 + x;
+	disable_interrupt();
+	outportb(0x3D4, 14);
+	outportb(0x3D5, cursorLocation >> 8);
+	outportb(0x3D4, 15);
+	outportb(0x3D5, cursorLocation);
+	enable_interrupt();
+}
+
+void scroll(){
+	int i=0;
+	if(_yPos>=25){
+		uint16_t attribute =0;// _color << 8;
+		for(i=0;i<24*80;i++)
+			video_memory[i]=video_memory[i+80];
+		for(i=24*80;i<25*80;i++)
+			video_memory[i] = attribute | ' ';
+
+		_yPos = 24;	
+	}
+}
+
+void kernelGetXY (unsigned* x, unsigned* y) {
+
+	if (x==0 || y==0)
+		return;
+
+	*x = _xPos;
+	*y = _yPos;
+}
 
 
 void kernelPutc (unsigned char c) {
 
-	if (c==0)
-		return;
+	uint16_t attribute = _color << 8;
 
-	if (c == '\n'||c=='\r') {	// we need a new line :)
-		_yPos+=2;
-		_xPos=_startX;
-		return;
+	if(c==0x80 && _xPos)
+		_xPos--;
+	
+	else if(c==0x09)
+		_xPos = (_xPos+8) & ~(8-1);
+
+
+	else if(c == '\r')
+		_xPos = 0;
+
+	else if (c == '\n'){
+		_xPos = 0;
+		_yPos++;
 	}
 
-	if (_xPos > 79) {		// row is full, we need a new line :)
-		_yPos+=2;
-		_xPos=_startX;
-		return;
+	if(c>=' ') {	
+		uint16_t* location = video_memory + (_yPos*80 + _xPos);
+		*location = c | attribute;
+		_xPos++;
 	}
 
-	unsigned char* p = (unsigned char*)VID_MEMORY + (_xPos++)*2 + _yPos * 80; // grab current coordinate in vid_men
-	*p++ = c; // add our character to the next position in video memory
-	*p =_color; // set the color
+	if (_xPos >= 80) {		// row is full, we need a new line :)
+		_xPos=0;
+		_yPos++;
+	}
+
+	if(_yPos>=25)
+		scroll();
+
+	kernelUpdateCursor(_xPos,_yPos);
 }
 
 char tbuf[32];
@@ -80,28 +126,32 @@ unsigned kernelSetColor (const unsigned c) {
 }
 
 void kernelGotoXY (unsigned x, unsigned y) {
+	if(_xPos <= 80)
+		_xPos = x;
+	if(_yPos <=25)
+		_yPos = y;
 
-	// reposition starting vectors for next text to follow
-	// multiply by 2 do to the video modes 2byte per character layout
-	_xPos = x*2;
-	_yPos = y*2;
-	_startX=_xPos;
-	_startY=_yPos;
+	kernelUpdateCursor(_xPos,_yPos);
+}
+
+int displayGetHorz(){
+	return 80;
+}
+
+int displayGetVert(){
+	return 24;
 }
 
 void kernelClrScr (const unsigned short c) {
 
-	unsigned char* p = (unsigned char*)VID_MEMORY;
 	
 	int i=0;
-	for (i=0; i<160*30; i+=2) {
-
-		p[i] = ' '; 
-		p[i+1] = c;
+	for (i=0; i<80*25; i++) {
+		video_memory[i] = ' ' | (c<<8);
 	}
 
 	// go to start of previous set vector
-	_xPos=_startX;_yPos=_startY;
+	kernelGotoXY(0,0);
 }
 
 void kernelPuts (char* str) {
@@ -109,7 +159,7 @@ void kernelPuts (char* str) {
 	if (!str)
 		return;
 	
-	size_t i=0;
+	unsigned int i=0;
 	for (i=0; i<strlen(str); i++)
 		kernelPutc (str[i]);
 }
@@ -186,6 +236,6 @@ int kernelPrintf (const char* str, ...) {
 	}
 
 	va_end (args);
-	return 0;
+	return i;
 }
 

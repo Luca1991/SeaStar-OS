@@ -5,7 +5,7 @@
 #include <size_t.h>
 
 
-
+extern int strcmp (const char* str1, const char* str2);
 extern size_t strlen ( const char* str );
 extern char *strcpy (char *s1,const char *s2);
 
