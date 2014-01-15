@@ -24,6 +24,7 @@ all:
 	$(CC) $(CFLAGS) -o $(ODIR)/vmm.o ./Kernel/vmm.c
 	$(CC) $(CFLAGS) -o $(ODIR)/vmm_pde.o ./Kernel/vmm_pde.c
 	$(CC) $(CFLAGS) -o $(ODIR)/vmm_pte.o ./Kernel/vmm_pte.c
+	$(CC) $(CFLAGS) -o $(ODIR)/keyboard_driver.o ./Drivers/keyboard/keyboard_driver.c
 
 # Build ASM files
 	nasm -f elf ./Kernel/asm/bootstrap.asm -o $(ODIR)/bootstrap.o
@@ -40,6 +41,8 @@ all:
 	nasm -f elf ./Kernel/asm/pmm_is_paging_asm.asm -o $(ODIR)/pmm_is_paging_asm.asm.o
 	nasm -f elf ./Kernel/asm/pmm_load_PDBR.asm -o $(ODIR)/pmm_load_PDBR.o
 	nasm -f elf ./Kernel/asm/pmm_get_PDBR.asm -o $(ODIR)/pmm_get_PDBR.o
+
+	nasm -f elf ./Drivers/keyboard/i86_keyboard_irq.asm -o $(ODIR)/i86_keyboard_irq.o
 
 
 # Link 
