@@ -1,6 +1,7 @@
 SeaStar OS
 
 STATO ATTUALE: Driver testiera funzionante
+
 PROSSIMO TASK: Implementazione driver floppy disk
 
 SeaStar OS è un sistema operativo scritto da 0, verrà presentato come tesi di laurea
