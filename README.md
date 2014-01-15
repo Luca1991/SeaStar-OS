@@ -1,7 +1,7 @@
 SeaStar OS
 
-STATO ATTUALE: Gestore della memoria virtuale funzionante
-PROSSIMO TASK: Implementazione driver tastiera
+STATO ATTUALE: Driver testiera funzionante
+PROSSIMO TASK: Implementazione driver floppy disk
 
 SeaStar OS è un sistema operativo scritto da 0, verrà presentato come tesi di laurea
 ed è stato scritto per scopi didattici e per capire in dettaglio come funziona un
