@@ -1,4 +1,5 @@
 SeaStar OS
+==========
 
 STATO ATTUALE: Driver testiera funzionante
 
@@ -13,24 +14,26 @@ x86 si trovano nella cartall Arch/x86.
 Il resto del sistema dovrebbe essere portabile senza difficoltà.
 SeaStar OS è ancora in fase embrionale.
 
-Task critici (da fixare nelle prossime 24/48 ore)
-- Gestione degli interrupt migliore (scrivere uno stub in asm per tutti gli interrupt)
-- Librerie standard da migliorare e pulire (molte delle quali sono state prese dal web
+Task critici:
+
+* Gestione degli interrupt migliore (scrivere uno stub in asm per tutti gli interrupt)
+* Librerie standard da migliorare e pulire (molte delle quali sono state prese dal web
 e richiedono qualche ora di pulizia e ottimizzazione)
-- usando la funzione kernelPrintf, il wildcard %s NON VERRA' ESEGUITO CORRETTAMENTE
+* usando la funzione kernelPrintf, il wildcard %s NON VERRA' ESEGUITO CORRETTAMENTE
 (questo e' un bug critico da fixare il prima possibile)
 
 
 ATTENZIONE: i problemi presenti nel codice sono accompagnati da un commento FIXME
 
-NOTA: per compilare l'os occorre avere il compilatore i586-elf-gcc in path!
+NOTA: per compilare l'os occorre avere il compilatore i586-elf-gcc in path (se siete su linux a 64bit)
 
 Luca D'Amico
 
 PS: I suggerimenti e i commenti sono ben accetti !! Se volete aiutarmi speditemi 
 una mail.
 
-Special Thanks:
+Special Thanks
+--------------
 
 Neon (Mike) for his great os-dev tutorials series
 
