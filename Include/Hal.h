@@ -29,4 +29,38 @@ extern const char* get_cpu_vendor(); // Returns the cpu vendor
 
 extern int get_tick_count(); // Returns current tick count
 
+//! sets the mode of a channel
+extern void dma_set_mode (uint8_t channel, uint8_t mode);
+
+//! prepares for generic channel read
+extern void dma_set_read (uint8_t channel);
+
+//! prepares for generic channel write
+extern void dma_set_write (uint8_t channel);
+
+//! sets the address of a channel
+extern void dma_set_address(uint8_t channel, uint8_t low, uint8_t high);
+
+//! sets the counter of a channel
+extern void dma_set_count(uint8_t channel, uint8_t low, uint8_t high);
+
+//! masks a channel
+extern void dma_mask_channel (uint8_t channel);
+
+//! unmasks a channel
+extern void dma_unmask_channel (uint8_t channel);
+
+//! resets a flipflop
+extern void dma_reset_flipflop (int dma);
+
+//! reset the dma to defaults
+extern void dma_reset (int dma);
+
+//! sets an external page register
+extern void dma_set_external_page_register (uint8_t reg, uint8_t val);
+
+//! unmasks all registers
+extern void dma_unmask_all (int dma);
+
+
 #endif

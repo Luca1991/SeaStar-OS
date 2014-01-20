@@ -1,12 +1,13 @@
 #include <bootinfo.h>
 #include <Hal.h>
 #include <string.h>
+#include <stdio.h>
 #include "KernelDisplay.h"
 #include "exception.h"
 #include "pmm.h"
 #include "vmm.h"
 #include <drivers/keyboard_driver.h>
-
+#include <drivers/floppy_driver.h>
 
 
 
@@ -33,7 +34,7 @@ void cmd(){
 }
 
 void get_cmd(char* buf,int n){
-	cmd();
+	
 	KEYCODE key = KEY_UNKNOWN;
 	int BufChar;
 
@@ -75,10 +76,43 @@ void get_cmd(char* buf,int n){
 	buf[i] = '\0';
 }
 
+void cmd_read_sect(){
+	uint32_t sectornum = 0;
+	char sectornumbuf[4];
+	uint8_t* sector = 0;
+	kernelPuts("\n\rPlease select the sector to dump >");
+	get_cmd(sectornumbuf,3);
+	sectornum = atoi(sectornumbuf);
+
+	kernelPrintf("\n\rSector %d contents:\n\n\r",sectornum);
+	sector = floppydisk_read_sector (sectornum);
+
+
+
+	if(sector!=0){
+		int i = 0,c = 0,j = 0;
+		for (c=0;c<4;c++){
+			for(j=0;j<128;j++)
+				kernelPrintf("0x%x ", sector[i+j]);
+			i += 128;
+			kernelPuts("\n\rPress any key to continue..\n\r");
+			getch();
+		}
+	}
+	else
+		kernelPuts("\n\r !!! Error reading from floppy disk !!!");
+
+	kernelPuts("\n\r Done..");
+}
+
 int run_cmd(char* cmd_buf){
 	if(strcmp(cmd_buf,"halt")==0){
 		kernelPuts("\nSeaStar OS Halted. You can now shoutdown your computer");
 		return 1;
+	}
+
+	else if(strcmp(cmd_buf,"floppydump")==0){
+		cmd_read_sect();
 	}
 
 	else if(strcmp(cmd_buf,"cls")==0){
@@ -101,6 +135,8 @@ void run(){
 	char cmd_buf[100];
 
 	while(1){
+		cmd();
+
 		get_cmd(cmd_buf,98);
 	
 
@@ -200,7 +236,8 @@ void kmain (multiboot_info_t* MultibootStructure)
 	uint32_t memSize = MultibootStructure->mem_lower + MultibootStructure->mem_upper; 
 
 	// Init Physical Memory Manager
-	pmm_init (memSize, 0x100000+kernelSize*256);
+	pmm_init (memSize, 0x100000+kernelSize*512);
+
 	
 	kernelPrintf("\nPhysical Memory Manager initialized\nwith %i KB physical memory; memLo: %i memHi: %i\n",
 		memSize,MultibootStructure->mem_lower ,MultibootStructure->mem_upper);
@@ -226,8 +263,8 @@ void kmain (multiboot_info_t* MultibootStructure)
 /*		kernelPrintf ("Memory Region %i: Initial addr: 0x%x%x Size in bytes: 0x%x%x type: %i \n", i, 
 			region[i].base_addr_high, region[i].base_addr_low,
 			region[i].length_high,region[i].length_low,
-			region[i].type);
-*/
+			region[i].type);*/
+
 		// if region[i] is type 1, then it is available memory.. just initialize the region for use
 		if (region[i].type==1)
 			pmm_init_region (region[i].base_addr_low, region[i].length_low);
@@ -235,7 +272,10 @@ void kmain (multiboot_info_t* MultibootStructure)
 
 
 	// deinit the region of memory that the kernel is using
-	pmm_deinit_region (0x100000, kernelSize*256);
+	pmm_deinit_region (0x100000, kernelSize*512);
+
+	// deinit the region of memory used for floppy DMA
+//	pmm_deinit_region (0x0, 0x8000); // FIXME - DMA Fix... still need some test !
 
 
 
@@ -255,6 +295,12 @@ void kmain (multiboot_info_t* MultibootStructure)
 	
 	kkeyboard_install(33);
 	kernelPrintf("Keyboard Driver Installed.. Running SeaShell.... \n");
+
+	floppydisk_set_working_drive (0);
+	floppydisk_install(38);
+	floppydisk_set_dma(0x8000);
+	kernelPrintf("Floppy Driver Installed.. \n");
+
 	run();
 
 	while(1);

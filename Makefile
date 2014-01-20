@@ -25,6 +25,8 @@ all:
 	$(CC) $(CFLAGS) -o $(ODIR)/vmm_pde.o ./Kernel/vmm_pde.c
 	$(CC) $(CFLAGS) -o $(ODIR)/vmm_pte.o ./Kernel/vmm_pte.c
 	$(CC) $(CFLAGS) -o $(ODIR)/keyboard_driver.o ./Drivers/keyboard/keyboard_driver.c
+	$(CC) $(CFLAGS) -o $(ODIR)/floppy_driver.o ./Drivers/floppy/floppy_driver.c
+	$(CC) $(CFLAGS) -o $(ODIR)/dma.o ./Arch/x86/Hal/dma.c
 
 # Build ASM files
 	nasm -f elf ./Kernel/asm/bootstrap.asm -o $(ODIR)/bootstrap.o
@@ -43,6 +45,7 @@ all:
 	nasm -f elf ./Kernel/asm/pmm_get_PDBR.asm -o $(ODIR)/pmm_get_PDBR.o
 
 	nasm -f elf ./Drivers/keyboard/i86_keyboard_irq.asm -o $(ODIR)/i86_keyboard_irq.o
+	nasm -f elf ./Drivers/floppy/i86_floppy_irq.asm -o $(ODIR)/i86_floppy_irq.o
 
 
 # Link 

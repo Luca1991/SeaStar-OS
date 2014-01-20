@@ -328,9 +328,9 @@ uint8_t kkeyboard_get_last_scan(){
 void kkeyboard_set_leds (int num, int caps, int scroll){
 	uint8_t data = 0;
 	
-	data = (scroll==1) ? (data | 1) : (data & 1);
-	data = (num==1) ? (num | 2) : (num & 2);
-	data = (caps==1) ? (num | 4) : (num & 4);
+	data = (scroll==1) ? (data | 1) : (data & 1);     // if 1st bit is 1 scroll lock is active
+	data = (num==1) ? (data | 10) : (data & 11);	  // if 2nd bit is 1 num lock is active
+	data = (caps==1) ? (data | 100) : (data & 111);   // if 3rd bit is 1 caps lock is active
 
 	keyboard_enc_send_cmd(KEYBOARD_ENC_CMD_SET_LED);
 	keyboard_enc_send_cmd(data);
