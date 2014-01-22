@@ -27,6 +27,8 @@ all:
 	$(CC) $(CFLAGS) -o $(ODIR)/keyboard_driver.o ./Drivers/keyboard/keyboard_driver.c
 	$(CC) $(CFLAGS) -o $(ODIR)/floppy_driver.o ./Drivers/floppy/floppy_driver.c
 	$(CC) $(CFLAGS) -o $(ODIR)/dma.o ./Arch/x86/Hal/dma.c
+	$(CC) $(CFLAGS) -o $(ODIR)/fat12.o ./Fs/fat12.c
+	$(CC) $(CFLAGS) -o $(ODIR)/vfs.o ./Fs/vfs.c
 
 # Build ASM files
 	nasm -f elf ./Kernel/asm/bootstrap.asm -o $(ODIR)/bootstrap.o

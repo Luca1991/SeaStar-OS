@@ -4,18 +4,8 @@
 #define	__CTYPE_H
 
 
-#ifdef _MSC_VER
-// Get rid of conversion warnings
-#pragma warning (disable:4244)
-#endif
-
-#ifdef __cplusplus
-extern "C"
-{
-#endif
 
 #define isspace(c)      ((c) == ' ' || ((c) >= '\t' && (c) <= '\r'))
-#define isascii(c)      (((c) & ~0x7f) == 0)
 #define isupper(c)      ((c) >= 'A' && (c) <= 'Z')
 #define islower(c)      ((c) >= 'a' && (c) <= 'z')
 #define isalpha(c)      (isupper(c) || islower(c))
@@ -31,8 +21,5 @@ extern "C"
 
 
 
-#ifdef __cplusplus
-}
-#endif
 
 #endif

@@ -1,9 +1,9 @@
 SeaStar OS
 ==========
 
-STATO ATTUALE: Driver floppy funzionante / Driver DMA funzionante
+STATO ATTUALE: Driver testiera funzionante
 
-PROSSIMO TASK: Implementazione filesystem fat12 (floppy)
+PROSSIMO TASK: Implementazione driver floppy disk
 
 SeaStar OS è un sistema operativo scritto da 0, verrà presentato come tesi di laurea
 ed è stato scritto per scopi didattici e per capire in dettaglio come funziona un

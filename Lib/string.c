@@ -59,3 +59,12 @@ unsigned short *memsetw(unsigned short *dest, unsigned short val, size_t count)
 		*temp++ = val;
     return dest;
 }
+
+char* strchr(char *str, int character){
+	do{
+		if(*str==character)
+			return (char*)str;
+	}while(*str++);
+
+	return 0;
+}

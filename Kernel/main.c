@@ -8,6 +8,7 @@
 #include "vmm.h"
 #include <drivers/keyboard_driver.h>
 #include <drivers/floppy_driver.h>
+#include <fs/fat12.h>
 
 
 
@@ -80,7 +81,7 @@ void cmd_read_sect(){
 	uint32_t sectornum = 0;
 	char sectornumbuf[4];
 	uint8_t* sector = 0;
-	kernelPuts("\n\rPlease select the sector to dump >");
+	kernelPuts("\n\rPlease select the sector to dump > ");
 	get_cmd(sectornumbuf,3);
 	sectornum = atoi(sectornumbuf);
 
@@ -105,6 +106,37 @@ void cmd_read_sect(){
 	kernelPuts("\n\r Done..");
 }
 
+void cmd_read_file(){
+	char path[32];
+	kernelPuts("\n\rPlease select file path > ");
+	get_cmd(path,32);
+	kernelPuts("\n");
+	FILE file = volOpenFile(path);
+	if(file.flags == FS_INVALID){
+		kernelPuts("\n\rError: unable to open file");
+		return;
+	}
+	if((file.flags & FS_DIR)==FS_DIR){
+		kernelPuts("\n\rUnable to display directory contents");
+		return;
+	}
+	while(file.eof != 1){
+		unsigned char buf[512];
+		volReadFile(&file,buf,512);
+				
+		
+		kernelPrintf((const char*)buf);
+		
+		if(file.eof!=1){
+			kernelPuts("\n\rPress a key to continue");
+			getch();
+			kernelPuts("\r");
+		}
+	}
+
+	kernelPuts("\n\rEnd of file reached!");
+}
+
 int run_cmd(char* cmd_buf){
 	if(strcmp(cmd_buf,"halt")==0){
 		kernelPuts("\nSeaStar OS Halted. You can now shoutdown your computer");
@@ -113,6 +145,10 @@ int run_cmd(char* cmd_buf){
 
 	else if(strcmp(cmd_buf,"floppydump")==0){
 		cmd_read_sect();
+	}
+
+	else if(strcmp(cmd_buf,"cat")==0){
+		cmd_read_file();
 	}
 
 	else if(strcmp(cmd_buf,"cls")==0){
@@ -294,13 +330,17 @@ void kmain (multiboot_info_t* MultibootStructure)
 	
 	
 	kkeyboard_install(33);
-	kernelPrintf("Keyboard Driver Installed.. Running SeaShell.... \n");
+	kernelPrintf("Keyboard Driver Installed..  \n");
 
 	floppydisk_set_working_drive (0);
 	floppydisk_install(38);
 	floppydisk_set_dma(0x8000);
 	kernelPrintf("Floppy Driver Installed.. \n");
 
+	fsysFatInit();
+	kernelPrintf("Virtual Filesystem Installed.. \n");
+	kernelPrintf("FAT12 Filesystem Initialized.. \n");
+	kernelPrintf("Running SeaShell.... \n");
 	run();
 
 	while(1);
