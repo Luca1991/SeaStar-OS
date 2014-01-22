@@ -1,9 +1,9 @@
 SeaStar OS
 ==========
 
-STATO ATTUALE: Driver testiera funzionante
+STATO ATTUALE: Implementato VFS base e supporto Fat12 FS (sola lettura) 
 
-PROSSIMO TASK: Implementazione driver floppy disk
+PROSSIMO TASK: Implementazione userland e syscall
 
 SeaStar OS è un sistema operativo scritto da 0, verrà presentato come tesi di laurea
 ed è stato scritto per scopi didattici e per capire in dettaglio come funziona un
