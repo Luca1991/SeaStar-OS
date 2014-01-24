@@ -16,11 +16,17 @@ void dma_unmask_channel(uint8_t chan){
 }
 
 void dma_unmask_all(int dma){
-	outportb(DMA1_CLEAR_MASK_REG,0xff);
+	if(dma==0)
+		outportb(DMA0_CLEAR_MASK_REG,0xff);
+	else if(dma==1)
+		outportb(DMA1_CLEAR_MASK_REG,0xff);
 }
 
 void dma_reset(int dma){
-	outportb(DMA0_INTER_REG,0xff);
+	if(dma==0)
+		outportb(DMA0_INTER_REG,0xff);
+	else if(dma==1)
+		outportb(DMA1_INTER_REG,0xff);
 }
 
 void dma_reset_flipflop(int dma){

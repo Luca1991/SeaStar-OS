@@ -2,7 +2,7 @@
 #define _FAT12_H
 
 #include <stdint.h>
-#include "vfs.h"
+#include <fs/vfs.h>
 
 #define __packed
 // Directory entry
@@ -11,10 +11,10 @@ struct _DIRECTORY{
 	uint8_t Extension[3];
 	uint8_t Attribute;
 	uint8_t	Reserved;
-	uint8_t	TimeCreatedMS;
-	uint16_t TimeCreated;
-	uint16_t DateCreated;
-	uint16_t DateLastAccessed;
+	uint8_t	CreationTimedMS;
+	uint16_t CreationTime;
+	uint16_t CreationDate;
+	uint16_t LastAccesseDate;
 	uint16_t FirstClusterHiBytes;
 	uint16_t LastModTime;
 	uint16_t LastModDate;

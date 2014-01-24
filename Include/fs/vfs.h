@@ -32,7 +32,7 @@ typedef struct _FILE_SYSTEM{
 #define FS_DIR 1
 #define FS_INVALID 2
 
-extern FILE volOpenFile(const char* fname);
+extern FILE volOpenFile(const char* fname,unsigned char device);
 extern void volReadFile(PFILE file, unsigned char* buffer, unsigned int length);
 extern void volCloseFile(PFILE file);
 extern void volRegisterFileSystem(PFILESYSTEM, unsigned int deviceID);

@@ -43,7 +43,7 @@ int vsprintf(char *str, const char *format, va_list ap) {
 						char s[32]={0};
 						itoa_s (c, 10, s);
 						strcpy (&str[loc], s);
-						loc+= strlen(s) - 2;
+						loc+= strlen(s) - 1;
 						i++;		// next character
 						break;
 					}
@@ -56,19 +56,19 @@ int vsprintf(char *str, const char *format, va_list ap) {
 						itoa_s (c,16,s);
 						strcpy (&str[loc], s);
 						i++;		// next character
-						loc+=strlen(s) - 2;
+						loc+=strlen(s) - 1;
 						break;
 					}
 
 					// strings
 					case 's': {
-						int c = (int) va_arg (ap, char); // FIXME
 						char s[32]={0};
-						strcpy (s,(const char*)c);						
+						strcpy(s, va_arg (ap, char *));
 						strcpy (&str[loc], s);
-						i++;		// next character
-						loc+=strlen(s) - 2;
+						i++;		// go to next character
+						loc+=strlen(s) - 1;
 						break;
+							
 					}
 				}
 				break;

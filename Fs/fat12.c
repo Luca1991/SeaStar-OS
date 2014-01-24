@@ -3,6 +3,9 @@
 #include <bpb.h>
 #include <string.h>
 #include <ctype.h>
+#include <fs/vfs.h>
+
+
 
 #define SECTOR_SIZE 512 // 512 bytes per sectors
 
@@ -71,9 +74,9 @@ FILE fsysFatDirectory(const char* DirectoryName){
 			char name[12];
 			memcpy(name,directory->Filename,11);
 			name[11]=0;
-
+			
 			if(strcmp(DosFileName,name) == 0){
-
+				
 				strcpy(file.name, DirectoryName);
 				file.id = 0;
 				file.currentCluster = directory->FirstCluster;
@@ -81,6 +84,7 @@ FILE fsysFatDirectory(const char* DirectoryName){
 				file.eof = 0;
 				file.fileLength = directory->FileSize;
 				
+			
 
 				if(directory->Attribute == 0x10)
 					file.flags = FS_DIR; // File is a directory
@@ -88,6 +92,7 @@ FILE fsysFatDirectory(const char* DirectoryName){
 					file.flags = FS_FILE; // else, it is a file
 
 				return file;
+				
 			}
 			directory++;		// next directory!
 		}
@@ -194,6 +199,8 @@ FILE fsysFatOpen(const char* FileName){
 		curDirectory = fsysFatDirectory(path); //no, then search in root dir
 		if(curDirectory.flags == FS_FILE) 
 			return curDirectory;     // File found
+		if(curDirectory.flags == FS_DIR) 
+			return curDirectory;     // Dir found
 
 		FILE ret;   
 		ret.flags = FS_INVALID; // unable to find file
@@ -213,11 +220,12 @@ FILE fsysFatOpen(const char* FileName){
 		}
 		pathname[i] = 0; // null termitate
 
-		if(rootDir){ 
+		if(rootDir==1){ 
 			curDirectory = fsysFatDirectory(pathname); // Search root directory
 			rootDir = 0;
 		}
-		else{
+		else{	
+			
 			curDirectory = fsysFatOpenSubDir(curDirectory,pathname); // Search a subdir instead
 		}
 		
@@ -226,11 +234,16 @@ FILE fsysFatOpen(const char* FileName){
 
 		if(curDirectory.flags == FS_FILE)
 			return curDirectory;  // File Found
+
+		
 		
 		p=strchr(p+1,'\\');
 		if(p)
 			p++;
 	}
+
+	if(curDirectory.flags == FS_DIR)
+			return curDirectory; // Dir Found
 
 	FILE ret;
 	ret.flags = FS_INVALID; // unable to find file

@@ -2,7 +2,7 @@
 #include <string.h>
 #include <Hal.h>
 
-#include "../Kernel/KernelDisplay.h"
+#include <KernelDisplay.h>
 
 #define __packed
 struct idtr{

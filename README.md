@@ -19,8 +19,7 @@ Task critici:
 * Gestione degli interrupt migliore (scrivere uno stub in asm per tutti gli interrupt)
 * Librerie standard da migliorare e pulire (molte delle quali sono state prese dal web
 e richiedono qualche ora di pulizia e ottimizzazione)
-* usando la funzione kernelPrintf, il wildcard %s NON VERRA' ESEGUITO CORRETTAMENTE
-(questo e' un bug critico da fixare il prima possibile)
+
 
 
 ATTENZIONE: i problemi presenti nel codice sono accompagnati da un commento FIXME

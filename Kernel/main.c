@@ -2,191 +2,14 @@
 #include <Hal.h>
 #include <string.h>
 #include <stdio.h>
-#include "KernelDisplay.h"
+#include <KernelDisplay.h>
 #include "exception.h"
 #include "pmm.h"
 #include "vmm.h"
 #include <drivers/keyboard_driver.h>
 #include <drivers/floppy_driver.h>
 #include <fs/fat12.h>
-
-
-
-void sleep (int ms){
-	int ticks = ms + get_tick_count();
-	while(ticks > get_tick_count());
-}
-
-KEYCODE getch(){
-	KEYCODE key = KEY_UNKNOWN;
-
-	while(key==KEY_UNKNOWN)
-		key = kkeyboard_get_last_key();
-
-	kkeyboard_discard_last_key();
-	return key;
-}
-
-void cmd(){
-	kernelSetColor (0x1a);
-	kernelPrintf("\nRoot@SeaStar#-Command>");
-	kernelSetColor (0x0f);
-	kernelPrintf(" ");
-}
-
-void get_cmd(char* buf,int n){
-	
-	KEYCODE key = KEY_UNKNOWN;
-	int BufChar;
-
-	int i = 0;
-	while(i<n){
-		BufChar = 1;
-		key = getch();
-
-		if(key == KEY_RETURN)
-			break;
-	
-		if(key == KEY_BACKSPACE){
-			BufChar = 0;
-			if(i>0){
-				unsigned x,y;
-				kernelGetXY(&x,&y);
-				if(x>0)
-					kernelGotoXY (--x,y);
-				else{
-					y--;
-					x = 80;
-				}
-	
-				kernelPutc(' ');
-				kernelGotoXY(x,y);
-				i--;
-			}
-
-		}	
-		if(BufChar==1){
-			char c = kkeyboard_key_to_ascii(key);
-			if ((c != 0) && (key != 0x1001)){
-				kernelPutc(c);
-				buf[i++] = c;
-			}	
-		}
-		sleep(10);
-	}
-	buf[i] = '\0';
-}
-
-void cmd_read_sect(){
-	uint32_t sectornum = 0;
-	char sectornumbuf[4];
-	uint8_t* sector = 0;
-	kernelPuts("\n\rPlease select the sector to dump > ");
-	get_cmd(sectornumbuf,3);
-	sectornum = atoi(sectornumbuf);
-
-	kernelPrintf("\n\rSector %d contents:\n\n\r",sectornum);
-	sector = floppydisk_read_sector (sectornum);
-
-
-
-	if(sector!=0){
-		int i = 0,c = 0,j = 0;
-		for (c=0;c<4;c++){
-			for(j=0;j<128;j++)
-				kernelPrintf("0x%x ", sector[i+j]);
-			i += 128;
-			kernelPuts("\n\rPress any key to continue..\n\r");
-			getch();
-		}
-	}
-	else
-		kernelPuts("\n\r !!! Error reading from floppy disk !!!");
-
-	kernelPuts("\n\r Done..");
-}
-
-void cmd_read_file(){
-	char path[32];
-	kernelPuts("\n\rPlease select file path > ");
-	get_cmd(path,32);
-	kernelPuts("\n");
-	FILE file = volOpenFile(path);
-	if(file.flags == FS_INVALID){
-		kernelPuts("\n\rError: unable to open file");
-		return;
-	}
-	if((file.flags & FS_DIR)==FS_DIR){
-		kernelPuts("\n\rUnable to display directory contents");
-		return;
-	}
-	while(file.eof != 1){
-		unsigned char buf[512];
-		volReadFile(&file,buf,512);
-				
-		
-		kernelPrintf((const char*)buf);
-		
-		if(file.eof!=1){
-			kernelPuts("\n\rPress a key to continue");
-			getch();
-			kernelPuts("\r");
-		}
-	}
-
-	kernelPuts("\n\rEnd of file reached!");
-}
-
-int run_cmd(char* cmd_buf){
-	if(strcmp(cmd_buf,"halt")==0){
-		kernelPuts("\nSeaStar OS Halted. You can now shoutdown your computer");
-		return 1;
-	}
-
-	else if(strcmp(cmd_buf,"floppydump")==0){
-		cmd_read_sect();
-	}
-
-	else if(strcmp(cmd_buf,"cat")==0){
-		cmd_read_file();
-	}
-
-	else if(strcmp(cmd_buf,"cls")==0){
-		kernelClrScr(0x0f);
-	}
-	
-	else if(strcmp (cmd_buf,"help") == 0) {
-		kernelPuts("\nBenvenuto sull'help! Questa parte e' ancora da scrivere ^^");
-	}
-	
-	else{
-		kernelPrintf("\nUnknown command");
-	}
-	
-	return 0;
-
-}
-
-void run(){
-	char cmd_buf[100];
-
-	while(1){
-		cmd();
-
-		get_cmd(cmd_buf,98);
-	
-
-		if(run_cmd(cmd_buf)==1)
-			break;
-	}
-}
-
-
-
-
-
-
-
+#include <shell/seashell.h>
 
 
 
@@ -341,7 +164,9 @@ void kmain (multiboot_info_t* MultibootStructure)
 	kernelPrintf("Virtual Filesystem Installed.. \n");
 	kernelPrintf("FAT12 Filesystem Initialized.. \n");
 	kernelPrintf("Running SeaShell.... \n");
-	run();
+
+
+	SeaShell();
 
 	while(1);
 

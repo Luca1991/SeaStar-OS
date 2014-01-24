@@ -181,6 +181,7 @@ int kernelPrintf (const char* str, ...) {
 
 				switch (str[i+1]) {
 
+
 					/*** characters ***/
 					case 'c': {
 						char c =(char) va_arg (args, int);
@@ -191,9 +192,8 @@ int kernelPrintf (const char* str, ...) {
 
 					/*** address of ***/
 					case 's': {
-						int c = (int)  va_arg (args, char);//(int&) FIXME
 						char str[32]={0};
-						itoa_s (c, 16, str);
+						strcpy(str, va_arg (args, char *));
 						kernelPuts (str);
 						i++;		// go to next character
 						break;

@@ -1,19 +1,20 @@
 #include <fs/vfs.h>
 #include <string.h>
 
+
 #define MAX_DEVICES 26 // Max number of mounted devices
 
 PFILESYSTEM _FileSystems[MAX_DEVICES]; // Fs ist
 
-// Open file
-FILE volOpenFile(const char* fname){
+// Open file - fname = full path, device = device ID
+FILE volOpenFile(const char* fname,unsigned char device){
 	if(fname){
-		unsigned char device = 'a'; // Default device 'a'
+	//	unsigned char device = 'a'; // Default device 'a'
 		char* filename = (char*) fname;
 		// FIXME this should be fname[1], but due to shift bug we have to check fname[2]
-		if(fname[2]==':'){
+		if(fname[1]==':'){
 			device = fname[0];
-			filename += 3; // FIXME 2 or 3 ??
+			filename += 2; // FIXME 2 or 3 ??
 		}
 
 		if(_FileSystems[device - 'a']){ // FS Call

@@ -118,3 +118,9 @@ int get_tick_count(){
 	return i86_pit_get_tick_count();
 
 }
+
+// Sleep for ms
+void sleep (int ms){
+	int ticks = ms + get_tick_count();
+	while(ticks > get_tick_count());
+}

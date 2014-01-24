@@ -14,6 +14,6 @@ extern void *memset(void *dest, char val, size_t count);
 extern unsigned short* memsetw(unsigned short *dest, unsigned short val, size_t count);
 extern char* strchr(char *str, int character);
 
-
+extern char* strcat(char *dest, const char *src);
 
 #endif

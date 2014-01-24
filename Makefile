@@ -29,6 +29,8 @@ all:
 	$(CC) $(CFLAGS) -o $(ODIR)/dma.o ./Arch/x86/Hal/dma.c
 	$(CC) $(CFLAGS) -o $(ODIR)/fat12.o ./Fs/fat12.c
 	$(CC) $(CFLAGS) -o $(ODIR)/vfs.o ./Fs/vfs.c
+	$(CC) $(CFLAGS) -o $(ODIR)/rtc.o ./Arch/x86/Hal/rtc.c
+	$(CC) $(CFLAGS) -o $(ODIR)/seashell.o ./Shell/seashell.c
 
 # Build ASM files
 	nasm -f elf ./Kernel/asm/bootstrap.asm -o $(ODIR)/bootstrap.o

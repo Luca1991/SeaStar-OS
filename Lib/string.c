@@ -1,6 +1,6 @@
 #include <string.h>
 
-
+// strcmp - Compare str1 with str2
 int strcmp (const char* str1, const char* str2) {
 
 	int res=0;
@@ -67,4 +67,14 @@ char* strchr(char *str, int character){
 	}while(*str++);
 
 	return 0;
+}
+
+
+char* strcat(char *dest, const char *src){
+    char *rdest = dest;
+
+    while (*dest)
+      dest++;
+    while ((*dest++ = *src++));
+    return rdest;
 }
