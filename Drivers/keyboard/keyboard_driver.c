@@ -460,7 +460,7 @@ int kkeyboard_self_test(){
 
 void kkeyboard_install (int irq){
 
-	setvect(irq, i86_keyboard_irq);
+	setvect(irq, i86_keyboard_irq,0);
 
 	_kkeyboard_bat_response = 1;
 	_scancode = 0;

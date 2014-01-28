@@ -10,6 +10,7 @@
 #include <drivers/floppy_driver.h>
 #include <fs/fat12.h>
 #include <shell/seashell.h>
+#include "syscall.h"
 
 
 
@@ -29,24 +30,24 @@ void kmain (multiboot_info_t* MultibootStructure)
 	hal_initialize ();
 
 
-	setvect (0,divide_by_zero_fault);
-	setvect (1,single_step_trap);
-	setvect (2,nmi_trap);
-	setvect (3,breakpoint_trap);
-	setvect (4,overflow_trap);
-	setvect (5,bounds_check_fault);
-	setvect (6,invalid_opcode_fault);
-	setvect (7,no_device_fault);
-	setvect (8,double_fault_abort);
-	setvect (10,invalid_tss_fault);
-	setvect (11,no_segment_fault);
-	setvect (12,stack_fault);
-	setvect (13,general_protection_fault);
-	setvect (14,page_fault);
-	setvect (16,fpu_fault);
-	setvect (17,alignment_check_fault);
-	setvect (18,machine_check_abort);
-	setvect (19,simd_fpu_fault);
+	setvect (0,divide_by_zero_fault,0);
+	setvect (1,single_step_trap,0);
+	setvect (2,nmi_trap,0);
+	setvect (3,breakpoint_trap,0);
+	setvect (4,overflow_trap,0);
+	setvect (5,bounds_check_fault,0);
+	setvect (6,invalid_opcode_fault,0);
+	setvect (7,no_device_fault,0);
+	setvect (8,double_fault_abort,0);
+	setvect (10,invalid_tss_fault,0);
+	setvect (11,no_segment_fault,0);
+	setvect (12,stack_fault,0);
+	setvect (13,general_protection_fault,0);
+	setvect (14,page_fault,0);
+	setvect (16,fpu_fault,0);
+	setvect (17,alignment_check_fault,0);
+	setvect (18,machine_check_abort,0);
+	setvect (19,simd_fpu_fault,0);
 
 	
 	
@@ -163,9 +164,13 @@ void kmain (multiboot_info_t* MultibootStructure)
 	fsysFatInit();
 	kernelPrintf("Virtual Filesystem Installed.. \n");
 	kernelPrintf("FAT12 Filesystem Initialized.. \n");
+	
+
+	syscall_init();
+	kernelPrintf("SysCalls Initliazed.... \n");
+	install_tss(5,0x10,0);	
+	kernelPrintf("TSS Installed.... \n");
 	kernelPrintf("Running SeaShell.... \n");
-
-
 	SeaShell();
 
 	while(1);

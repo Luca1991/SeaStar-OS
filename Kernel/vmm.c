@@ -10,15 +10,36 @@
 pdirectory* _cur_directory=0;	// current directory table 
 physical_addr _cur_pdbr=0;	// current page directory base register
 
+
+inline uint32_t vmm_ptable_virt_to_index(virtual_addr addr){
+	// Return index only if it doesn't exceed 4mb ptable addr space size
+	return (addr >= PTABLE_ADDR_SPACE_SIZE) ? 0 : addr/PAGE_SIZE;
+}
+
+inline uint32_t vmm_pdirectory_virt_to_index(virtual_addr addr){
+	// Return index only if it doesn't exceed 4gb pdirectory addr space size
+	return (addr >= DTABLE_ADDR_SPACE_SIZE) ? 0 : addr/PAGE_SIZE;
+}
+
+inline void vmm_ptable_clear(ptable* p){
+	if(p)
+		memset(p,0,sizeof(ptable));
+}
+
+inline void vmm_pdirectory_clear(pdirectory* dir){
+	if(dir)
+		memset(dir,0,sizeof(pdirectory));
+}
+
 inline pt_entry* vmm_ptable_lookup_entry(ptable* p,virtual_addr addr){
 	if(p)
-		return &p->m_entries[PAGE_TABLE_INDEX(addr)];
+		return &p->m_entries[vmm_ptable_virt_to_index(addr)];
 	return 0;
 }
 
 inline pd_entry* vmm_pdirectory_lookup_entry (pdirectory* p,virtual_addr addr){
 	if(p)
-		return &p->m_entries[PAGE_TABLE_INDEX(addr)];
+		return &p->m_entries[vmm_ptable_virt_to_index(addr)];
 	return 0;
 }
 
@@ -52,64 +73,40 @@ void vmm_free_page(pt_entry* e){
 	pt_entry_del_attrib(e,I86_PTE_PRESENT);
 }
 
-void vmm_map_page(void* phys, void* virt){
-	pdirectory* pageDirectory = vmm_get_directory();  // Get page dir
-	pd_entry* e = &pageDirectory->m_entries[PAGE_DIRECTORY_INDEX((uint32_t)virt)]; // Get page tab
-	if((*e & I86_PTE_PRESENT) != I86_PTE_PRESENT){ // if the page tab is not present, we need allocate it
-		ptable* table = (ptable*) pmm_alloc_block();
-		if(!table)
-			return;
-		memset(table,0,sizeof(ptable)); // Clear page tab
-		pd_entry* entry = &pageDirectory->m_entries [PAGE_DIRECTORY_INDEX((uint32_t)virt)]; // Create a new entry
-		// Map the page table and add it to the dir
-		pd_entry_add_attrib(entry,I86_PDE_PRESENT);
-		pd_entry_add_attrib(entry,I86_PDE_WRITABLE);
-		pd_entry_set_frame(entry,(physical_addr)table);
-	}
-	ptable* table = (ptable*) PAGE_GET_PHYSICAL_ADDRESS(e); // get the table
-	pt_entry* page = &table->m_entries[PAGE_TABLE_INDEX((uint32_t)virt)]; // get the page
-	// Map the page to the table
-	pt_entry_set_frame(page,(physical_addr)phys);
-	pt_entry_add_attrib(page,I86_PTE_PRESENT);
-}
 
 void vmm_initialize(){
 	ptable* table = (ptable*) pmm_alloc_block(); // default page table
 	if(!table)
 		return;
 
-	ptable* table2 = (ptable*) pmm_alloc_block(); // 3GB page table
-	if(!table2)
-		return;
+	vmm_ptable_clear(table); // clear the page table
 	
-	memset(table,0,sizeof(ptable)); // clear the page table
+
 	// We need to identity-map the 1st 4MB
-	int i , frame,virt;
-	for(i=0, frame=0x0,virt=0x00000000;i<1024;i++,frame+=4096,virt+=4096){
+	int i , frame;
+	for(i=0, frame=0;i<1024;i++,frame+=4096){
 		// We need to create a new page and add it to the table2 page table		
 		pt_entry page = 0;
 		pt_entry_add_attrib(&page,I86_PTE_PRESENT);
+		pt_entry_add_attrib(&page,I86_PTE_USER);
 		pt_entry_set_frame(&page,frame);
-		table2->m_entries[PAGE_TABLE_INDEX(virt)] = page;
+		table->m_entries[vmm_ptable_virt_to_index(frame)] = page;
 	}
 
-	// Create the default directory table
+	// Create the default directory table..
 	pdirectory* dir = (pdirectory*) pmm_alloc_blocks(3);
 	if(!dir)
 		return;
 
-	memset(dir,0,sizeof(pdirectory)); // Clear it
+	vmm_pdirectory_clear(dir); // .. and clear it 
 
 	// set the first entry of directory table to point to our table
-	pd_entry* entry = &dir->m_entries[PAGE_DIRECTORY_INDEX(0xc0000000)];
+	pd_entry* entry = vmm_pdirectory_lookup_entry(dir,0);
 	pd_entry_add_attrib(entry,I86_PDE_PRESENT);
 	pd_entry_add_attrib(entry,I86_PDE_WRITABLE);
+	pd_entry_add_attrib(entry,I86_PDE_USER);
 	pd_entry_set_frame(entry,(physical_addr)table);
-	// set the second entry of directory table to point to our table2
-	pd_entry* entry2 = &dir->m_entries[PAGE_DIRECTORY_INDEX(0x00000000)];
-	pd_entry_add_attrib(entry2,I86_PDE_PRESENT);
-	pd_entry_add_attrib(entry2,I86_PDE_WRITABLE);
-	pd_entry_set_frame(entry2,(physical_addr)table2);
+
 
 	_cur_pdbr = (physical_addr) &dir->m_entries; // store current pdbr
 

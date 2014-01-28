@@ -11,8 +11,6 @@ typedef uint32_t virtual_addr;
 #define PAGES_PER_TABLE 1024
 #define PAGES_PER_DIR	1024
 
-#define PAGE_DIRECTORY_INDEX(x) (((x) >> 22) & 0x3ff)
-#define PAGE_TABLE_INDEX(x) (((x) >> 12) & 0x3ff)
 #define PAGE_GET_PHYSICAL_ADDRESS(x) (*x & ~0xfff)
 
 struct ptable{
@@ -50,6 +48,6 @@ extern void vmm_pdirecotry_clear(pdirectory* dir);
 
 extern pd_entry* vmm_pdirectory_lookup_entry (pdirectory* p, virtual_addr addr);
 
-
+extern void vmm_flush_tlb_entry(virtual_addr addr); // This function is written in ASM
 
 #endif

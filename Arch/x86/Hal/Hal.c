@@ -86,9 +86,9 @@ void disable_interrupt(){
 
 
 // Sets new interrupt vector
-void setvect(int intno, void (far *vect)()){
+void setvect(int intno, void (far *vect)(),int flags){
 	// install interrupt handler (ATTENTION: this will overwrite previous interrupt descriptor)
-	i86_install_ir(intno,I86_IDT_DESC_PRESENT|I86_IDT_DESC_BIT32,0x8,vect);
+	i86_install_ir(intno,I86_IDT_DESC_PRESENT|I86_IDT_DESC_BIT32|flags,0x8,vect);
 
 }
 
@@ -123,4 +123,28 @@ int get_tick_count(){
 void sleep (int ms){
 	int ticks = ms + get_tick_count();
 	while(ticks > get_tick_count());
+}
+
+void enter_usermode(){
+      asm volatile("  \
+      cli; \
+      mov $0x23, %ax; \
+      mov %ax, %ds; \
+      mov %ax, %es; \
+      mov %ax, %fs; \
+      mov %ax, %gs; \
+                    \
+       \
+      mov %esp, %eax; \
+      pushl $0x23; \
+      pushl %eax; \
+      pushf; \
+      pop %eax; \
+      xor $200,%eax; \
+      push %eax; \
+      pushl $0x1B; \
+      push $1f; \
+      iret; \
+    1: \
+      ");
 }

@@ -1,11 +1,11 @@
-#ifndef _GDT_H_INCLUDED
-#define _GDT_H_INCLUDED
+#ifndef _GDT_H
+#define _GDT_H
 
 
 #include  <stdint.h>
 
 
-#define MAX_DESCRIPTORS 3
+#define MAX_DESCRIPTORS 6
 
 // GDT descriptor acess bit flags!
 

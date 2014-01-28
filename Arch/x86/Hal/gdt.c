@@ -25,24 +25,25 @@ static void gdt_install(){
 }
 
 
-
+// Setup a descriptor in GDT
 void gdt_set_descriptor(uint32_t i, uint64_t base,uint64_t limit, uint8_t access, uint8_t grand){
 	if(i>MAX_DESCRIPTORS)
 		return;
 
-	memset((void*)&_gdt[i],0,sizeof(gdt_descriptor));
-
+	memset((void*)&_gdt[i],0,sizeof(gdt_descriptor)); // Clean the descriptor
+	// Set limit and base addr
 	_gdt[i].baseLo = (uint16_t)(base & 0xffff);
 	_gdt[i].baseMid = (uint8_t)((base >> 16) & 0xff);
 	_gdt[i].baseHi = (uint8_t) ((base >> 24) & 0xff);
 	_gdt[i].limit = (uint16_t)(limit & 0xffff);
-
+	// Set flags and grand bytes
 	_gdt[i].flags = access;
 	_gdt[i].grand = (uint8_t)((limit >> 16) & 0x0f);
 	_gdt[i].grand |= grand & 0xf0;
 
 }
 
+// Return a descriptor in GDT
 gdt_descriptor* i86_gdt_get_descriptor(int i){
 	if(i>MAX_DESCRIPTORS)
 		return 0;
@@ -50,6 +51,7 @@ gdt_descriptor* i86_gdt_get_descriptor(int i){
 
 }
 
+// Initialize GDT
 int i86_gdt_initialize(){
 	// Setup our gdtr
 	_gdtr.m_limit = (sizeof(struct gdt_descriptor) * MAX_DESCRIPTORS)-1;
@@ -58,13 +60,20 @@ int i86_gdt_initialize(){
 	// Set null descriptor
 	gdt_set_descriptor(0,0,0,0,0);
 	// Set default code descriptor
-	gdt_set_descriptor (1,0,0xffffffff,I86_GDT_DESC_READWRITE|I86_GDT_DESC_EXEC_CODE|I86_GDT_DESC_CODEDATA|I86_GDT_DESC_MEMORY,I86_GDT_GRAND_4K | I86_GDT_GRAND_32BIT | I86_GDT_GRAND_LIMITHI_MASK);
+	gdt_set_descriptor (1,0,0xffffffff,I86_GDT_DESC_READWRITE|I86_GDT_DESC_EXEC_CODE|I86_GDT_DESC_CODEDATA|I86_GDT_DESC_MEMORY,I86_GDT_GRAND_4K | 			I86_GDT_GRAND_32BIT | I86_GDT_GRAND_LIMITHI_MASK);
 	// Set default data descriptor
 	gdt_set_descriptor (2,0,0xffffffff,
 		I86_GDT_DESC_READWRITE|I86_GDT_DESC_CODEDATA|I86_GDT_DESC_MEMORY,
 		I86_GDT_GRAND_4K | I86_GDT_GRAND_32BIT | I86_GDT_GRAND_LIMITHI_MASK);
-
-
+	// Set default usermode code descriptor
+	gdt_set_descriptor(3,0,0xffffffff,
+		I86_GDT_DESC_READWRITE|I86_GDT_DESC_EXEC_CODE|I86_GDT_DESC_CODEDATA|
+		I86_GDT_DESC_MEMORY|I86_GDT_DESC_DPL, I86_GDT_GRAND_4K| I86_GDT_GRAND_32BIT|
+		I86_GDT_GRAND_LIMITHI_MASK);
+	// Set default usermode data descriptor
+	gdt_set_descriptor(4,0,0xffffffff,
+		I86_GDT_DESC_READWRITE|I86_GDT_DESC_CODEDATA|I86_GDT_DESC_MEMORY|
+		I86_GDT_DESC_DPL, I86_GDT_GRAND_4K|I86_GDT_GRAND_32BIT|I86_GDT_GRAND_LIMITHI_MASK);
 
 
 	// install gdtr

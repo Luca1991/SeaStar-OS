@@ -1,9 +1,9 @@
 SeaStar OS
 ==========
 
-STATO ATTUALE: Implementato VFS base e supporto Fat12 FS (sola lettura) 
+STATO ATTUALE: Implementate userland e syscall handler
 
-PROSSIMO TASK: Implementazione userland e syscall
+PROSSIMO TASK: Implementazione loader eseguibili
 
 SeaStar OS è un sistema operativo scritto da 0, verrà presentato come tesi di laurea
 ed è stato scritto per scopi didattici e per capire in dettaglio come funziona un

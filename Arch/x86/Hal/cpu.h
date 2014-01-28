@@ -1,5 +1,5 @@
-#ifndef _CPU_H_DEFINED
-#define _CPU_H_DEFINED
+#ifndef _CPU_H
+#define _CPU_H
 
 #include <stdint.h>
 #include "regs.h"
@@ -16,6 +16,6 @@ extern void i86_cpu_flush_caches(); // This function is written is ASM
 
 extern void i86_cpu_flush_caches_write(); // This function is written in ASM
 
-extern void i86_cpu_flush_tlb_entry(uint32_t addr); // This function is written in ASM
+
 
 #endif

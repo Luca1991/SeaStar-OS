@@ -97,7 +97,7 @@ void i86_pit_start_counter (uint32_t freq, uint8_t counter, uint8_t mode){
 
 void i86_pit_initialize(){
 
-	setvect(32,_i86_pit_irq);
+	setvect(32,_i86_pit_irq,0);
 	_pit_isinit = 1;
 
 }

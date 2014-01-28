@@ -338,7 +338,7 @@ void floppydisk_lba2chs (int lba, int *head, int *track, int *sector){
 // Install floppy disk driver
 void floppydisk_install(int irq){
 
-	setvect(irq, i86_floppy_irq); // install irq handler
+	setvect(irq, i86_floppy_irq,0); // install irq handler
 
 	floppydisk_reset(); // reset floppy drive controller
 	floppydisk_drive_data(13,1,0xf,1); // set drive informations

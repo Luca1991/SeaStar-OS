@@ -22,7 +22,7 @@ extern void outportb (unsigned short portid, unsigned char value); // Write byte
 extern void enable_interrupt(); // Enable all Hardware interrupts
 extern void disable_interrupt(); // Disable all Hardware interrupts
 
-extern void setvect (int intno, void (far *vect)() ); // Sets new interrupt vector
+extern void setvect (int intno, void (far *vect)(),int flags); // Sets new interrupt vector
 
 
 extern const char* get_cpu_vendor(); // Returns the cpu vendor
@@ -65,5 +65,14 @@ extern void dma_unmask_all (int dma);
 // sleep for ms
 extern void sleep (int ms);
 
+// Enter usermode function. 
+extern void enter_usermode();
+
+// Install Task State Segment (tss.c)
+extern void install_tss(uint32_t idx, uint16_t kernelSS, uint16_t kernelESP);
+// Init system calls
+extern void syscall_init();
+
+extern void tss_set_stack(uint16_t kernelSS, uint16_t kernelESP);
 
 #endif

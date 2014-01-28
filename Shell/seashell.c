@@ -183,6 +183,30 @@ void cmd_change_dir(){
 	
 }
 
+void user_test(){
+	int stack=0;
+
+	 asm ("movl %%esp,%0"
+		    : "=r"(stack));
+
+
+	tss_set_stack(0x10,stack);
+	
+	enter_usermode(); // Enter usermode
+
+
+	char* hello="\nHello usermode world!\n";
+	
+
+	asm("mov $0,%%eax\n"
+	    "lea (%0),%%ebx\n"
+	    "int $0x80"
+	    ::"b"(hello)); // Call kernelPrintf usign syscall 0 :)
+
+	
+	while(1);
+}
+
 int run_cmd(char* cmd_buf){
 	if(strcmp(cmd_buf,"halt")==0){
 		kernelPuts("\nSeaStar OS Halted. You can now shoutdown your computer");
@@ -209,6 +233,10 @@ int run_cmd(char* cmd_buf){
 		print_time_and_date();
 	}
 	
+	else if(strcmp(cmd_buf,"usertest")==0){
+		user_test();
+	}
+
 	else if(strcmp (cmd_buf,"help") == 0) {
 		kernelPuts("\nBenvenuto sull'help! Questa parte e' ancora da scrivere ^^");
 	}

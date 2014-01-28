@@ -31,6 +31,8 @@ all:
 	$(CC) $(CFLAGS) -o $(ODIR)/vfs.o ./Fs/vfs.c
 	$(CC) $(CFLAGS) -o $(ODIR)/rtc.o ./Arch/x86/Hal/rtc.c
 	$(CC) $(CFLAGS) -o $(ODIR)/seashell.o ./Shell/seashell.c
+	$(CC) $(CFLAGS) -o $(ODIR)/tss.o ./Arch/x86/Hal/tss.c
+	$(CC) $(CFLAGS) -o $(ODIR)/syscall.o ./Kernel/syscall.c
 
 # Build ASM files
 	nasm -f elf ./Kernel/asm/bootstrap.asm -o $(ODIR)/bootstrap.o
@@ -39,7 +41,7 @@ all:
 	nasm -f elf ./Arch/x86/Hal/asm/gdtfix.asm -o $(ODIR)/gdtfix.o
 	nasm -f elf ./Arch/x86/Hal/asm/i86_cpu_flush_caches.asm -o $(ODIR)/i86_cpu_flush_caches.o
 	nasm -f elf ./Arch/x86/Hal/asm/i86_cpu_flush_caches_write.asm -o $(ODIR)/i86_cpu_flush_caches_write.o
-	nasm -f elf ./Arch/x86/Hal/asm/i86_cpu_flush_tlb_entry.asm -o $(ODIR)/i86_cpu_flush_tlb_entry.o
+	nasm -f elf ./Kernel/asm/vmm_flush_tlb_entry.asm -o $(ODIR)/vmm_flush_tlb_entry.asm.o
 
 
 
@@ -51,6 +53,10 @@ all:
 	nasm -f elf ./Drivers/keyboard/i86_keyboard_irq.asm -o $(ODIR)/i86_keyboard_irq.o
 	nasm -f elf ./Drivers/floppy/i86_floppy_irq.asm -o $(ODIR)/i86_floppy_irq.o
 
+	nasm -f elf ./Arch/x86/Hal/asm/flush_tss.asm -o $(ODIR)/flush_tss.o
+
+	
+	
 
 # Link 
 	$(LD) -T linker.ld $(ODIR)/*.o
