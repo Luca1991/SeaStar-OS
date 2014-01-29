@@ -14,22 +14,31 @@ x86 si trovano nella cartall Arch/x86.
 Il resto del sistema dovrebbe essere portabile senza difficoltà.
 SeaStar OS è ancora in fase embrionale.
 
+
 Task critici:
 
 * Gestione degli interrupt migliore (scrivere uno stub in asm per tutti gli interrupt)
 * Librerie standard da migliorare e pulire (molte delle quali sono state prese dal web
 e richiedono qualche ora di pulizia e ottimizzazione)
-
-
+* I driver della tastiera presentano alcuni problemi, devono essere controllati meglio
+* E' presente un bug su alcune schede madri che fa credere al kernel che sia presente
+un lettore floppy che in realtà non è esistente, facendo andare in panic il boot. 
 
 ATTENZIONE: i problemi presenti nel codice sono accompagnati da un commento FIXME
 
-NOTA: per compilare l'os occorre avere il compilatore i586-elf-gcc in path (se siete su linux a 64bit)
+
+Requisiti per la compilazione: 
+
+* Compilatore i586-elf-gcc in path (se siete su linux a 64bit)
+* Nasm
+* grub-mkrescue & xorriso
+
 
 Luca D'Amico
 
 PS: I suggerimenti e i commenti sono ben accetti !! Se volete aiutarmi speditemi 
 una mail.
+
 
 Special Thanks
 --------------
