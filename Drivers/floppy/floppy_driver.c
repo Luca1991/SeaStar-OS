@@ -167,9 +167,17 @@ void floppydisk_write_ccr(uint8_t val){
 }
 
 // Wait for IRQ
-inline void floppydisk_wait_for_irq(){
-	while(_FloppyDiskIRQ==0);
+inline int floppydisk_wait_for_irq(){
+	int timer = 0; // we use a timer to detect a timeout
+	while(_FloppyDiskIRQ==0 && timer<=10){
+		sleep(20);
+		timer++;
+	}
 	_FloppyDiskIRQ = 0;
+	if(timer>=10)
+		return 0; // Timeout! We fail to init the floppy disk drive
+	else
+		return 1;
 }
 
 // This is called from the asm floppy irq handler
@@ -265,13 +273,18 @@ void floppydisk_enable_controller(){
 }
 
 // Reset floppy disk controller
-void floppydisk_reset(){
+int floppydisk_reset(){
 	uint32_t st0, cyl;
 	int i = 0;
+	int check_for_timeout = 0;	
 
 	floppydisk_disable_controller();
 	floppydisk_enable_controller();
-	floppydisk_wait_for_irq(); 
+	
+	check_for_timeout = floppydisk_wait_for_irq(); 
+	
+	if(!check_for_timeout)
+		return 0;
 	for(i=0;i<4;i++)
 		floppydisk_check_int(&st0,&cyl); // check int/sense interrupt to all drivers
 
@@ -280,6 +293,8 @@ void floppydisk_reset(){
 	floppydisk_drive_data(3,16,240,1); // mechanical drive info.. steprade = 3ms, loadtime =16ms, unloadtime=240ms
 
 	floppydisk_calibrate(_CurrentDrive); // Calibrate the disk
+
+	return 1;
 }	
 
 // Read Sector using CHS format
@@ -336,12 +351,17 @@ void floppydisk_lba2chs (int lba, int *head, int *track, int *sector){
 }
 
 // Install floppy disk driver
-void floppydisk_install(int irq){
-
+int floppydisk_install(int irq){
+	int timeout=0;
 	setvect(irq, i86_floppy_irq,0); // install irq handler
 
-	floppydisk_reset(); // reset floppy drive controller
+	timeout=floppydisk_reset(); // reset floppy drive controller
+	
+	if(!timeout)
+		return 0;
 	floppydisk_drive_data(13,1,0xf,1); // set drive informations
+
+	return 1;
 }
 
 // Set current working drive
@@ -355,16 +375,27 @@ uint8_t floppydisk_get_working_drive(){
 	return _CurrentDrive;
 }
 
+int is_fdd_present(){ // check if a valid floppy drive is present
+	unsigned char check;      
+	outportb(0x70, 0x10);
+	sleep(100); // wait a moment before reading the cmos response
+	check = inportb(0x71);
+	check = check >> 4;   // Get the master fdd state
+
+	if(check==0)	      // if c == 0, no floppy drive found..
+		return 0;
+	else
+		return 1;    // else, floppy drive is present
+}
+
 // Read sector using LBA format
 uint8_t* floppydisk_read_sector(int secLBA){
 	if(_CurrentDrive >= 4) // Check if we are using a valid floppy drive
 		return 0;
 
-	unsigned char c;      // check if a valid floppy drive is present
-	outportb(0x70, 0x10);
-	c = inportb(0x71);
-	c = c >> 4;
-	if(c==0)	      // if c == 0, no floppy drive found..
+	int check_fdd = is_fdd_present();
+	
+	if(!check_fdd)
 		return 0;
 
 	int head=0, track=0, sector=1;

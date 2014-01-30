@@ -52,7 +52,7 @@ void kmain (multiboot_info_t* MultibootStructure)
 	
 	
 
-	kernelClrScr (0x00); // b1 
+	kernelClrScr (0x00);
 
 	kernelGotoXY (0,0);
 	kernelSetColor (0x1a);
@@ -155,15 +155,36 @@ void kmain (multiboot_info_t* MultibootStructure)
 	
 	kkeyboard_install(33);
 	kernelPrintf("Keyboard Driver Installed..  \n");
-
-	floppydisk_set_working_drive (0);
-	floppydisk_install(38);
-	floppydisk_set_dma(0x8000);
-	kernelPrintf("Floppy Driver Installed.. \n");
-
-	fsysFatInit();
-	kernelPrintf("Virtual Filesystem Installed.. \n");
-	kernelPrintf("FAT12 Filesystem Initialized.. \n");
+	int check_fdd;
+	check_fdd = is_fdd_present();
+	
+	
+	if(check_fdd){ 
+		int check_timeout = 0 ;
+		floppydisk_set_working_drive (0);
+		check_timeout = floppydisk_install(38);
+		if(check_timeout){
+			floppydisk_set_dma(0x8000);
+			kernelPrintf("Floppy Driver Installed.. \n");
+			fsysFatInit();
+			kernelPrintf("Virtual Filesystem Installed.. \n");
+			kernelPrintf("FAT12 Filesystem Initialized.. \n");
+		}
+		else{   // else, floppy drive irq timeout!!
+			kernelSetColor (0x04); 
+			kernelPrintf("Floppy Disk Drive IRQ Timeout.. \n");
+			kernelPrintf("Unable to Install VFS due to lack of physical medium.. \n");
+			kernelSetColor (0x0f);			
+		}
+	}
+	else if(!check_fdd){
+		kernelSetColor (0x04); 
+		kernelPrintf("Floppy Disk Drive not found.. \n");
+		kernelPrintf("Unable to Install VFS due to lack of physical medium.. \n");
+		kernelSetColor (0x0f);
+	}
+	
+	
 	
 
 	syscall_init();

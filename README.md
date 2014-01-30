@@ -21,8 +21,7 @@ Task critici:
 * Librerie standard da migliorare e pulire (molte delle quali sono state prese dal web
 e richiedono qualche ora di pulizia e ottimizzazione)
 * I driver della tastiera presentano alcuni problemi, devono essere controllati meglio
-* E' presente un bug su alcune schede madri che fa credere al kernel che sia presente
-un lettore floppy che in realtà non è esistente, facendo andare in panic il boot. 
+
 
 ATTENZIONE: i problemi presenti nel codice sono accompagnati da un commento FIXME
 
