@@ -32,7 +32,7 @@ inline uint8_t mmap_test (int bit){
 int mmap_find_first_free(){
 	uint32_t i;
 	int j;
-	for(i=0;i<pmm_get_block_count()/32;i++)
+	for(i=0;i<pmm_get_block_count();i++)
 		if(_pmm_memory_map[i] != 0xffffffff)
 			for(j=0;j<32;j++){   // 32 = bits in a block
 				int bit = 1 << j;
@@ -54,7 +54,7 @@ int mmap_find_first_free_s (size_t size){
 	uint32_t i;
 	int j;
 	uint32_t counter;
-	for(i=0;i<pmm_get_block_count()/32;i++)
+	for(i=0;i<pmm_get_block_count();i++) 
 		if(_pmm_memory_map[i] != 0xffffffff)
 			for(j=0;j<32;j++){   // 32 = bits in a block
 				int bit = 1 << j;
@@ -106,7 +106,7 @@ void pmm_deinit_region (physical_addr base, size_t size){
 
 }
 
-void* pmm_alloc_block(){
+void* pmm_alloc_block(){ 
 
 	if(pmm_get_free_block_count()<=0)
 		return 0;  // out of memory
@@ -118,12 +118,13 @@ void* pmm_alloc_block(){
 
 	mmap_set(frame);
 
-	physical_addr addr = frame * PMM_BLOCK_SIZE;
+	physical_addr addr = frame * PMM_BLOCK_SIZE; 
 	_pmm_used_blocks++;
-
+	
 	return (void*)addr;
 
 }
+
 
 void pmm_free_block(void* p){
 	physical_addr addr = (physical_addr)p;
@@ -134,7 +135,7 @@ void pmm_free_block(void* p){
 }
 
 void* pmm_alloc_blocks(size_t size){
-	if(pmm_get_free_block_count()<=size)
+	if(pmm_get_free_block_count()<size)
 		return 0; 	//not enough free blocks
 
 	int frame = mmap_find_first_free_s(size);

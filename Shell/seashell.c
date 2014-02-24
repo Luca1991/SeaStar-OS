@@ -8,6 +8,7 @@
 #include <KernelDisplay.h>
 #include <stdio.h>
 #include <fs/vfs.h>
+#include "./../Kernel/task.h"
 
 
 
@@ -117,7 +118,7 @@ void cmd_read_file(){
 		strcpy(fpath,currPath);
 		strcat(fpath,path);
 	}
-	kernelPrintf("DEBUG: selected path=%s",fpath);
+	kernelPrintf("DEBUG: selected path=%s\n",fpath);
 	FILE file = volOpenFile(fpath,currPath[0]); // Read the file using VFS
 
 	
@@ -130,20 +131,19 @@ void cmd_read_file(){
 		return;
 	}
 	while(file.eof != 1){
-		unsigned char buf[512];
+		unsigned char buf[513]; //512 char + '\0' :)
 		volReadFile(&file,buf,512);
-				
 		
 		kernelPrintf((const char*)buf);
-		
 		if(file.eof!=1){
 			kernelPuts("\n\rPress a key to continue");
 			getch();
-			kernelPuts("\r");
+			kernelPuts("\r                       \n");
 		}
 	}
 
 	kernelPuts("\n\rEnd of file reached!");
+	volCloseFile(&file);
 }
 
 void print_time_and_date(){
@@ -165,16 +165,16 @@ void cmd_change_dir(){
 		strcat(testPath,path);
 	}
 	// Now check if the folder really exist ..
-	kernelPrintf("\n\rDEBUG: selected path=%s",testPath);
+	kernelPrintf("\n\rDEBUG: selected path=%s\n",testPath);
 	FILE file = volOpenFile(testPath,currPath[0]);
 	if(file.flags == FS_DIR){ // .. and if it really exist, set the new path
 		if(path[2]=='>'){ // FIXME: this should be [1] and ':'... need to fix keyboard driver....
 			strcpy(currPath,path);
-			strcat(currPath,"\\");
+			strcat(currPath,"/");
 		}
 		else{
 			strcat(currPath,path);
-			strcat(currPath,"\\");
+			strcat(currPath,"/");
 		}
 		
 	}
@@ -183,8 +183,16 @@ void cmd_change_dir(){
 	
 }
 
-void user_test(){
-	int stack=0;
+void cmd_list_dir(){
+	kernelPrintf("\n\rDEBUG: selected path=%s\n",currPath);
+	kernelPrintf("\n\rThis function is not implemented yet, sorry :(\n");
+}
+
+	
+
+
+void check_elf(){
+	/*int stack=0;
 
 	 asm ("movl %%esp,%0"
 		    : "=r"(stack));
@@ -204,7 +212,31 @@ void user_test(){
 	    ::"b"(hello)); // Call kernelPrintf usign syscall 0 :)
 
 	
-	while(1);
+	while(1);*/
+
+char path[32];
+	kernelPuts("\n\rPlease select file path > ");
+	get_cmd(path,32);
+	kernelPuts("\n");
+	char fpath[500];
+	if(path[2]=='>'){ // FIXME: this should be [1] and ':'... need to fix keyboard driver....
+		strcpy(fpath,path);
+	}
+	else{
+		strcpy(fpath,currPath);
+		strcat(fpath,path);
+	}
+	kernelPrintf("DEBUG: selected path=%s\n",fpath);
+	//FILE file = volOpenFile(fpath,currPath[0]); // Read the file using VFS
+
+	
+	int ret = createProcess(fpath);
+
+	if (ret==0)
+		kernelPrintf ("\n\rError creating process");
+
+	executeProcess ();
+
 }
 
 int run_cmd(char* cmd_buf){
@@ -225,6 +257,10 @@ int run_cmd(char* cmd_buf){
 		cmd_change_dir();
 	}
 
+	else if(strcmp(cmd_buf,"ls")==0){
+		cmd_list_dir();
+	}
+
 	else if(strcmp(cmd_buf,"cls")==0){
 		kernelClrScr(0x0f);
 	}
@@ -233,8 +269,8 @@ int run_cmd(char* cmd_buf){
 		print_time_and_date();
 	}
 	
-	else if(strcmp(cmd_buf,"usertest")==0){
-		user_test();
+	else if(strcmp(cmd_buf,"elf32")==0){
+		check_elf();
 	}
 
 	else if(strcmp (cmd_buf,"help") == 0) {
@@ -252,7 +288,7 @@ int run_cmd(char* cmd_buf){
 
 void SeaShell(){
 	char cmd_buf[100];
-	strcpy(currPath, "a:\\"); 
+	strcpy(currPath, "x:/"); 
 	while(1){
 		cmd();
 		get_cmd(cmd_buf,98);

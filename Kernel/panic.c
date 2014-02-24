@@ -11,8 +11,8 @@ void  kernel_panic (const char* fmt, ...) {
 
 	disable_interrupt ();
 	char* panicMessage="Sorry SeaStar encountered a critical problem and cannot continue\n\
-			    Yeah this is a Kernel Panic. Any unsaved work is lost.\n\
-			    Please restart your computer.\n\n";
+Yeah this is a Kernel Panic. Any unsaved work is lost.\n\
+Please restart your computer.\n\n";
 
 	kernelClrScr (0x1f);
 	kernelGotoXY (0,0);

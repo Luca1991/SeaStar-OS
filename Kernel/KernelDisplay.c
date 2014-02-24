@@ -107,7 +107,7 @@ void itoa(unsigned i,unsigned base,char* buf) {
    buf[opos] = 0;
 }
 
-void itoa_s(int i,unsigned base,char* buf) {
+void itoa_s(unsigned i,unsigned base,char* buf) {
    if (base > 16) return;
    if (i < 0) {
       *buf++ = '-';
@@ -158,10 +158,10 @@ void kernelPuts (char* str) {
 
 	if (!str)
 		return;
-	
 	unsigned int i=0;
-	for (i=0; i<strlen(str); i++)
+	for (i=0; i<strlen(str); i++){
 		kernelPutc (str[i]);
+	}
 }
 
 int kernelPrintf (const char* str, ...) {
@@ -213,9 +213,9 @@ int kernelPrintf (const char* str, ...) {
 					/*** display in hex ***/
 					case 'X':
 					case 'x': {
-						int c = va_arg (args, int);
+						unsigned c = va_arg (args, unsigned);
 						char str[32]={0};
-						itoa_s (c,16,str);
+						itoa_s (c,16,str); 
 						kernelPuts (str);
 						i++;		// go to next character
 						break;

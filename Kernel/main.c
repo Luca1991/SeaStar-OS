@@ -9,23 +9,28 @@
 #include <drivers/keyboard_driver.h>
 #include <drivers/floppy_driver.h>
 #include <fs/fat12.h>
+#include <fs/ramdisk.h>
 #include <shell/seashell.h>
 #include "syscall.h"
+#include "liballoc.h"
 
+char *module_start;
+unsigned int module_end;
 
 
 void kmain (multiboot_info_t* MultibootStructure)
 {
+
 
 	extern  uint32_t end; // Trick from bootstrap / linking script to get the kernel end addr
 
 	
 	
 	uint32_t kernelSize=(int)&end;
-	kernelSize -= 0x100000; // Real Kernel Size
+	kernelSize -= 0x100000; // Real Kernel Size for low half
 	
 
-
+	
 
 	hal_initialize ();
 
@@ -48,46 +53,19 @@ void kmain (multiboot_info_t* MultibootStructure)
 	setvect (17,alignment_check_fault,0);
 	setvect (18,machine_check_abort,0);
 	setvect (19,simd_fpu_fault,0);
+	setvect (20,virtualization_exception,0);
+	setvect (30,security_exception,0);
 
 	
 	
-
 	kernelClrScr (0x00);
-
+	
 	kernelGotoXY (0,0);
 	kernelSetColor (0x1a);
 	kernelPrintf (" SeaStar OS Preparing to boot...                      ");
         
-	 /*
-	kernelGotoXY (0,1);
-	kernelSetColor (0x0f); //b1
-	kernelPrintf (" Benvenuto SeaStar OS - Programmato da Luca D'Amico\n");
-	kernelGotoXY (0,2);
-	kernelPrintf (" SeaStar OS e' un sistema operativo scritto da 0\n");
-	kernelGotoXY (0,3);
-	kernelPrintf (" Verra' presentato come tesi di laurea nel 2014\n");
-	kernelGotoXY (0,4);
-	kernelSetColor (0x2a);
-	kernelPrintf (" SeaStar is Loading HAL...\n");
-	kernelSetColor (0x1a);
-	kernelGotoXY (0,24);
-	kernelPrintf (" Initializing Hardware Abstraction Layer (HAL.o)...   ");
-	
-        kernelSetColor (0x0f);	
-	
-	kernelGotoXY (0,13);
-	kernelPrintf (" SE RIESCI A LEGGERE QUESTO MESSAGGIO GLI \n INTERRUPT HARDWARE FUNZIONANO!!!");
-	kernelGotoXY(0,16);		
-	kernelPrintf(" CPU id: ");
-        kernelPrintf(get_cpu_vendor());
-	
 
-	for (;;){
-		
-		kernelGotoXY (0,15);
-		kernelPrintf (" Current tick count: %i", get_tick_count());
-
-	}*/
+	
 
 
 	kernelSetColor (0x0f);
@@ -95,10 +73,12 @@ void kmain (multiboot_info_t* MultibootStructure)
 	//! get memory size in KB
 	uint32_t memSize = MultibootStructure->mem_lower + MultibootStructure->mem_upper; 
 
-	// Init Physical Memory Manager
-	pmm_init (memSize, 0x100000+kernelSize*512);
 
-	
+	// Init Physical Memory Manager
+	pmm_init (memSize, 0x100000+kernelSize); 
+
+;
+
 	kernelPrintf("\nPhysical Memory Manager initialized\nwith %i KB physical memory; memLo: %i memHi: %i\n",
 		memSize,MultibootStructure->mem_lower ,MultibootStructure->mem_upper);
 
@@ -113,7 +93,6 @@ void kmain (multiboot_info_t* MultibootStructure)
 		// if region type > 4 it is reserved (sanity check)
 		if (region[i].type>4)
 			break;
-
 
 		// if start address is 0 there is no more entries
 		if (i>0 && region[i].base_addr_low==0)
@@ -132,11 +111,10 @@ void kmain (multiboot_info_t* MultibootStructure)
 
 
 	// deinit the region of memory that the kernel is using
-	pmm_deinit_region (0x100000, kernelSize*512);
+	pmm_deinit_region (0x100000, kernelSize); 
 
-	// deinit the region of memory used for floppy DMA
-//	pmm_deinit_region (0x0, 0x8000); // FIXME - DMA Fix... still need some test !
-
+	// deinit the region of memory for kernel stack (or for floppy DMA)
+        pmm_deinit_region (0x0, 0x10000); 
 
 
 	kernelPrintf ("\npmm regions initialized: %i allocation blocks;\nused or reserved blocks: %i\nfree blocks: %i\n",
@@ -163,10 +141,12 @@ void kmain (multiboot_info_t* MultibootStructure)
 		int check_timeout = 0 ;
 		floppydisk_set_working_drive (0);
 		check_timeout = floppydisk_install(38);
+		
 		if(check_timeout){
+			
 			floppydisk_set_dma(0x8000);
 			kernelPrintf("Floppy Driver Installed.. \n");
-			fsysFatInit();
+			fsysFatInit('a'); // Mound Fat12 FS on device "A:\" 
 			kernelPrintf("Virtual Filesystem Installed.. \n");
 			kernelPrintf("FAT12 Filesystem Initialized.. \n");
 		}
@@ -189,9 +169,64 @@ void kmain (multiboot_info_t* MultibootStructure)
 
 	syscall_init();
 	kernelPrintf("SysCalls Initliazed.... \n");
-	install_tss(5,0x10,0);	
+
+		 
+	install_tss(5,0x10,0x9000);	//FIXME
 	kernelPrintf("TSS Installed.... \n");
-	kernelPrintf("Running SeaShell.... \n");
+
+
+	// LIBALLOC EXPERIMENTS (need more testing)
+
+	/*uint32_t* cc = kcalloc(1,sizeof(int));
+	kernelPrintf("DEBUG: cc %x \n",cc);
+	
+	uint32_t* dd = kcalloc(1,sizeof(int));
+	kernelPrintf("DEBUG: dd %x \n",dd);
+
+	kfree(dd);
+
+	uint32_t* ee = kcalloc(1,sizeof(int));
+	kernelPrintf("DEBUG: ee %x \n",ee);
+	
+	uint32_t* ff = kcalloc(1,sizeof(int));
+	kernelPrintf("DEBUG: ff %x \n",ff);
+
+	uint32_t* gg = kcalloc(1,sizeof(int));
+	kernelPrintf("DEBUG: gg %x \n",gg);
+	
+	uint32_t* hh = kcalloc(1,sizeof(int));
+	kernelPrintf("DEBUG: hh %x \n",hh);
+
+	uint32_t* ii = kcalloc(1,sizeof(int));
+	kernelPrintf("DEBUG: ii %x \n",ii);*/
+
+	/*uint32_t* cc = kmalloc(10*sizeof(int));
+	kernelPrintf("DEBUG: cc %x \n",cc);
+	
+	uint32_t* dd = kmalloc(10*sizeof(int));
+	kernelPrintf("DEBUG: dd %x \n",dd);
+
+	kfree(dd);
+
+	uint32_t* ee = kmalloc(10*sizeof(int));
+	kernelPrintf("DEBUG: ee %x \n",ee);
+	
+	uint32_t* ff = kmalloc(10*sizeof(int));
+	kernelPrintf("DEBUG: ff %x \n",ff);
+
+	uint32_t* gg = kmalloc(10*sizeof(int));
+	kernelPrintf("DEBUG: gg %x \n",gg);
+
+	uint32_t* hh = kmalloc(10*sizeof(int));
+	kernelPrintf("DEBUG: hh %x \n",hh);*/
+
+	module_start = (char*) *((unsigned int*)MultibootStructure->mods_addr);
+	module_end = *((unsigned int*)(MultibootStructure->mods_addr+4));
+	fsysRdInit(module_start,'x'); // Mound RamDisk FS on device "X:\" 
+
+	kernelPrintf("RamDisk Filesystem mounted.. \n");
+	
+	kernelPrintf("Init Done.. Running SeaShell.... \n");
 	SeaShell();
 
 	while(1);
