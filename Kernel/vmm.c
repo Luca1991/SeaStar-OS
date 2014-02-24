@@ -74,44 +74,123 @@ void vmm_free_page(pt_entry* e){
 }
 
 
-void vmm_initialize(){
+int vmm_initialize(){
 	ptable* table = (ptable*) pmm_alloc_block(); // default page table
 	if(!table)
-		return;
-
-	vmm_ptable_clear(table); // clear the page table
+		return 0;
 	
+	ptable* table2 = (ptable*) pmm_alloc_block(); // 3gb page table
+	if(!table2)
+		return 0;
+
+	vmm_ptable_clear(table); // clear the default page table
+	vmm_ptable_clear(table2);// clear the 3gb page table
 
 	// We need to identity-map the 1st 4MB
-	int i , frame;
-	for(i=0, frame=0;i<1024;i++,frame+=4096){
+	int i , frame,virtual;
+	for(i=0, frame=0,virtual=0x00000000;i<1024;i++,frame+=4096,virtual+=4096){ 
 		// We need to create a new page and add it to the table2 page table		
 		pt_entry page = 0;
 		pt_entry_add_attrib(&page,I86_PTE_PRESENT);
-		pt_entry_add_attrib(&page,I86_PTE_USER);
 		pt_entry_set_frame(&page,frame);
-		table->m_entries[vmm_ptable_virt_to_index(frame)] = page;
+		table2->m_entries[PAGE_TABLE_INDEX(virtual)] = page;
+	}
+
+	// Map 0MB to 3GB
+	for(i=0, frame=0x00000,virtual=0xc0000000;i<1024;i++,frame+=4096,virtual+=4096){
+		// We need to create a new page and add it to the table page table		
+		pt_entry page = 0;
+		pt_entry_add_attrib(&page,I86_PTE_PRESENT);
+		pt_entry_set_frame(&page,frame);
+		table->m_entries[PAGE_TABLE_INDEX(virtual)] = page;
 	}
 
 	// Create the default directory table..
 	pdirectory* dir = (pdirectory*) pmm_alloc_blocks(3);
 	if(!dir)
-		return;
+		return 0;
 
 	vmm_pdirectory_clear(dir); // .. and clear it 
 
 	// set the first entry of directory table to point to our table
-	pd_entry* entry = vmm_pdirectory_lookup_entry(dir,0);
+	pd_entry* entry = &dir->m_entries [PAGE_DIRECTORY_INDEX(0xc0000000)];
 	pd_entry_add_attrib(entry,I86_PDE_PRESENT);
 	pd_entry_add_attrib(entry,I86_PDE_WRITABLE);
-	pd_entry_add_attrib(entry,I86_PDE_USER);
 	pd_entry_set_frame(entry,(physical_addr)table);
+
+	// set the second entry of directory table to point to table2
+	pd_entry* entry2 = &dir->m_entries [PAGE_DIRECTORY_INDEX(0x00000000)];
+	pd_entry_add_attrib(entry2,I86_PDE_PRESENT);
+	pd_entry_add_attrib(entry2,I86_PDE_WRITABLE);
+	pd_entry_set_frame(entry2,(physical_addr)table2);
 
 
 	_cur_pdbr = (physical_addr) &dir->m_entries; // store current pdbr
 
 	// switch to our page dir and enable paging
-	vmm_switch_pdirectory(dir);
+	if(vmm_switch_pdirectory(dir)==0)
+		return 0;
 	pmm_paging_enable(1);
+	return 1;
 	
 }
+
+// Create Page Table
+int vmm_createPageTable(pdirectory* dir, uint32_t virtual,uint32_t flags){
+	pd_entry* pagedir = dir->m_entries;
+	if(pagedir[virtual>>22]==0){ // if the pagetable doesn't exist, create it!
+		void* block = pmm_alloc_block();
+		if(!block)
+			return 0;
+		pagedir[virtual>>22] = ((uint32_t)block)|flags;
+		memset((uint32_t*)pagedir[virtual>>22],0,4096); // clear it
+		vmm_mapPhysicalAddr(dir,(uint32_t)block,(uint32_t)block,flags); // map pagetable into dir
+	}
+	return 1;
+}
+
+// Map physical address to virtual address
+void vmm_mapPhysicalAddr(pdirectory* dir, uint32_t virtual,uint32_t physical,uint32_t flags){
+	pd_entry* pagedir = dir->m_entries;
+	if(pagedir[virtual>>22]==0)
+		vmm_createPageTable(dir,virtual,flags);
+	((uint32_t*)(pagedir[virtual>>22] & ~0xfff))[virtual<<10>>10>>12] = physical|flags; 
+}
+
+// Unmap page table
+void vmm_unmapPageTable(pdirectory* dir,uint32_t virtual){
+	pd_entry* pagedir = dir->m_entries;
+	if(pagedir[virtual>>22] != 0){ // Check if pagetable exist
+		void* frame = (void*)(pagedir[virtual>>22] & 0x7FFFF000); // Get mapped frame
+		pmm_free_block(frame);
+		pagedir[virtual>>22]=0; // Unmap frame
+	}
+}
+
+// Unmap Physical address
+void vmm_unmapPhysicalAddr(pdirectory* dir,uint32_t virtual){
+	pd_entry* pagedir = dir->m_entries;
+	if(pagedir[virtual>>22] != 0){
+		vmm_unmapPageTable(dir,virtual);
+	} 
+}
+
+// Create Address Space
+pdirectory* vmm_createAdressSpace(){
+	pdirectory* dir = 0;
+	dir = (pdirectory*) pmm_alloc_block(); // Allocate page directory..
+	if(!dir)
+		return 0;
+	vmm_pdirectory_clear(dir); // ..and clean it
+	return dir;
+}
+
+// Get Physical Address
+void* vmm_getPhysicalAddr(pdirectory* dir, uint32_t virtual){
+	pd_entry* pagedir = dir->m_entries;
+	if(pagedir[virtual>>22]==0)
+		return 0;
+
+	return (void*)((uint32_t*)(pagedir[virtual>>22] & ~0xfff))[virtual<<10>>10>>12]; 
+}
+

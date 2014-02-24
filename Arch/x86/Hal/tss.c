@@ -18,7 +18,7 @@ void install_tss(uint32_t idx, uint16_t kernelSS, uint16_t kernelESP){
 		I86_GDT_DESC_DPL|I86_GDT_DESC_MEMORY,0);
 
 	// Init TSS
-	memset((void*) &TSS, 0, sizeof(tss_entry));
+	memset((void*)&TSS, 0, sizeof(tss_entry));
 
 	// Set stack and segment
 	TSS.ss0 = kernelSS;
@@ -29,8 +29,10 @@ void install_tss(uint32_t idx, uint16_t kernelSS, uint16_t kernelESP){
 	TSS.ds = 0x13;
 	TSS.fs = 0x13;
 	TSS.gs = 0x13;
-
+	
 	// Flush TSS (This function is written in ASM)
 	flush_tss();
 
+
+		
 }

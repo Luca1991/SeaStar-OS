@@ -24,16 +24,16 @@ enum PAGE_PTE_FLAGS{
 
 typedef uint32_t pt_entry;
 
-extern void pt_entry_add_attrib(pt_entry* e, uint32_t attrib);
+extern void pt_entry_add_attrib(pt_entry* e, uint32_t attrib); // Add attribute to a page
 
-extern void pt_entry_del_attrib(pt_entry* e, uint32_t attrib);
+extern void pt_entry_del_attrib(pt_entry* e, uint32_t attrib); // Delete attribute from a page
 
-extern void pt_entry_set_frame (pt_entry*, physical_addr);
+extern void pt_entry_set_frame (pt_entry*, physical_addr); // Set the frame to a page
 
-extern uint8_t pt_entry_is_present (pt_entry e);
+extern uint8_t pt_entry_is_present (pt_entry e); // Check if a page is present
 
-extern uint8_t pt_entry_is_writable (pt_entry e);
+extern uint8_t pt_entry_is_writable (pt_entry e); // Check if a page is writable
 
-extern physical_addr pt_entry_pfn (pt_entry e);
+extern physical_addr pt_entry_pfn (pt_entry e); // Return the physical address (frame) mapped on a page 
 
 #endif

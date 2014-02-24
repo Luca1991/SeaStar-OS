@@ -5,7 +5,7 @@
 
 #define __packed
 // Task State Segment Entry
-struct tss_entry{
+struct _tss_entry{
 	uint32_t prevTss;
 	uint32_t esp0;
 	uint32_t ss0;
@@ -36,7 +36,7 @@ struct tss_entry{
 }__attribute((packed));
 #undef __packed
 
-typedef struct tss_entry tss_entry;
+typedef struct _tss_entry tss_entry;
 
 extern void flush_tss(); // This function is written in ASM
 extern void tss_set_stack(uint16_t kernelSS, uint16_t kernelESP);

@@ -4,9 +4,8 @@
 #include <stdint.h>
 
 // FILE
-
 typedef struct _FILE{
-	char name[32];
+	char     name[32];
 	uint32_t flags;
 	uint32_t fileLength;
 	uint32_t id;
@@ -16,11 +15,18 @@ typedef struct _FILE{
 	uint32_t deviceID;
 }FILE, *PFILE;
 
+// DIRECTORY ENTRIES
+/*typedef struct _DIRENT{  //FIXME: dirent is not yet complete and stable. It will be disabled for now.
+    char           name[32]; // Filename
+    uint32_t       flags;    // File type (file or dir)
+    uint32_t       size;     // If it is a file, store here the size  
+}DIRENT, *PDIRENT;*/
+
 // FS Interface
 typedef struct _FILE_SYSTEM{
 	char Name[8];
-	FILE (*Directory) (const char* DirectoryName);
-	void (*Mount) ();
+	void (*Directory) (const char* DirectoryName);
+	void (*Mount) (unsigned char deviceID);
 	void (*Read) (PFILE file, unsigned char* buffer, unsigned int length);
 	void (*Close) (PFILE);
 	FILE (*Open) (const char* FileNane);
@@ -33,10 +39,11 @@ typedef struct _FILE_SYSTEM{
 #define FS_INVALID 2
 
 extern FILE volOpenFile(const char* fname,unsigned char device);
+extern void volReadDir(const char* dname,unsigned char device);
 extern void volReadFile(PFILE file, unsigned char* buffer, unsigned int length);
 extern void volCloseFile(PFILE file);
-extern void volRegisterFileSystem(PFILESYSTEM, unsigned int deviceID);
-extern void volUnregisterFileSystem(PFILESYSTEM);
-extern void volUnregisterFileSystemByID(unsigned int deviceID);
+extern void volRegisterFileSystem(PFILESYSTEM, unsigned char deviceID);
+extern void volUnregisterFileSystem(PFILESYSTEM); // This will unmount all FS of the specified type
+extern void volUnregisterFileSystemByID(unsigned char deviceID); // This will unmount the fs of the specified device
 
 #endif

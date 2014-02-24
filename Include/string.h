@@ -16,4 +16,6 @@ extern char* strchr(char *str, int character);
 
 extern char* strcat(char *dest, const char *src);
 
+int strncmp(const char * s1, const char * s2, size_t n);
+
 #endif

@@ -11,6 +11,8 @@ typedef uint32_t virtual_addr;
 #define PAGES_PER_TABLE 1024
 #define PAGES_PER_DIR	1024
 
+#define PAGE_DIRECTORY_INDEX(x) (((x) >> 22) & 0x3ff)
+#define PAGE_TABLE_INDEX(x) (((x) >> 12) & 0x3ff)
 #define PAGE_GET_PHYSICAL_ADDRESS(x) (*x & ~0xfff)
 
 struct ptable{
@@ -24,9 +26,8 @@ struct pdirectory{
 typedef struct ptable ptable;
 typedef struct pdirectory pdirectory;
 
-extern void MmMapPage(void* phys,void* virt);
 
-extern void vmm_initialize();
+extern int vmm_initialize();
 
 extern uint8_t vmm_alloc_page(pt_entry*);
 
@@ -49,5 +50,17 @@ extern void vmm_pdirecotry_clear(pdirectory* dir);
 extern pd_entry* vmm_pdirectory_lookup_entry (pdirectory* p, virtual_addr addr);
 
 extern void vmm_flush_tlb_entry(virtual_addr addr); // This function is written in ASM
+
+extern int vmm_createPageTable(pdirectory* dir, uint32_t virt, uint32_t flags);
+
+extern void vmm_mapPhysicalAddr(pdirectory* dir, uint32_t virt, uint32_t phys, uint32_t flags);
+
+extern void vmm_unmapPageTable(pdirectory* dir, uint32_t virt);
+
+extern void vmm_unmapPhysicalAddr(pdirectory* dir, uint32_t virt);
+
+extern pdirectory* vmm_createAddressSpace();
+
+extern void* vmm_getPhysicalAddr(pdirectory* dir, uint32_t virt);
 
 #endif
