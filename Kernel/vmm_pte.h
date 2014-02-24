@@ -5,7 +5,6 @@
 #include "pmm.h"
 
 
-
 // i86 Arch format
 enum PAGE_PTE_FLAGS{
 	I86_PTE_PRESENT = 1,

@@ -17,6 +17,7 @@ inline uint8_t mmap_test (int bit);     	// test if bit is set or unset in the _
 int mmap_find_first_free ();			// finds first free block in _pmm_memory_map
 int mmap_find_first_free_s (size_t size);	// finds first "size" number of free blocks in _pmm_memory_map
 
+
 inline void mmap_set (int bit){
 	_pmm_memory_map[bit/32] |= (1<< (bit % 32));
 }

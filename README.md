@@ -1,7 +1,7 @@
 SeaStar OS
 ==========
 
-STATO ATTUALE: Rissolvere le ISSUES per la release 0.1 :)
+STATO ATTUALE: Rissolvere le ISSUES per la release 0.1 :) 
 
 SeaStar OS è un sistema operativo scritto da 0, verrà presentato come tesi di laurea
 ed è stato scritto per scopi didattici e per capire in dettaglio come funziona un
