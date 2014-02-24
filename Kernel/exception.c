@@ -82,3 +82,11 @@ void   machine_check_abort (unsigned int cs, unsigned int eip, unsigned int efla
 void   simd_fpu_fault (unsigned int cs, unsigned int eip, unsigned int eflags) {
 	kernel_panic ("FPU SIMD fault");
 }
+
+void   virtualization_exception (unsigned int cs, unsigned int eip, unsigned int eflags) {
+	kernel_panic ("Virtualization Exception");
+}
+
+void   security_exception (unsigned int cs, unsigned int eip, unsigned int eflags) {
+	kernel_panic ("Security Exception");
+}

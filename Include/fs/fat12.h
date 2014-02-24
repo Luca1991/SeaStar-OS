@@ -38,8 +38,8 @@ typedef struct _MOUNTINFO{
 extern FILE fsysFatDirectory (const char* DirectoryName);
 extern void fsysFatRead(PFILE file, unsigned char* buffer, unsigned int length);
 extern FILE fsysFatOpen(const char* filename);
-extern void fsysFatInit();
-extern void fsysFatMount();
+extern void fsysFatInit(unsigned char deviceID);
+extern void fsysFatMount(unsigned char deviceID);
 
 #endif
 

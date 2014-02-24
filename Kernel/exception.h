@@ -56,4 +56,10 @@ extern void  machine_check_abort (unsigned int cs, unsigned int eip, unsigned in
 extern void  simd_fpu_fault (unsigned int cs, unsigned int eip, unsigned int eflags);
 
 
+extern void  virtualization_exception (unsigned int cs, unsigned int eip, unsigned int eflags);
+
+
+extern void  security_exception (unsigned int cs, unsigned int eip, unsigned int eflags);
+
+
 #endif

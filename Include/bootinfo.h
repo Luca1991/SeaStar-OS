@@ -1,8 +1,6 @@
-#ifndef _BOOTINFO_H
-#define _BOOTINFO_H
+/* multiboot.h - the header for Multiboot 
 
-/* multiboot.h - the header for Multiboot */
-/* Copyright (C) 1999, 2001  Free Software Foundation, Inc.
+	Copyright (C) 1999, 2001  Free Software Foundation, Inc.
      
         This program is free software; you can redistribute it and/or modify
         it under the terms of the GNU General Public License as published by
@@ -17,6 +15,10 @@
         You should have received a copy of the GNU General Public License
         along with this program; if not, write to the Free Software
         Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA. */
+
+
+#ifndef _BOOTINFO_H
+#define _BOOTINFO_H
  
 /* The magic number for the Multiboot header. */
 #define MULTIBOOT_HEADER_MAGIC          0x1BADB002

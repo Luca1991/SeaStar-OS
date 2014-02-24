@@ -74,7 +74,7 @@ FILE fsysFatDirectory(const char* DirectoryName){
 			char name[12];
 			memcpy(name,directory->Filename,11);
 			name[11]=0;
-			
+
 			if(strcmp(DosFileName,name) == 0){
 				
 				strcpy(file.name, DirectoryName);
@@ -194,7 +194,7 @@ FILE fsysFatOpen(const char* FileName){
 	int rootDir=1;
 	char* path = (char*) FileName;
 
-	p = strchr(path,'\\'); // Check for '\' symbols in path
+	p = strchr(path,'/'); // Check for '\' symbols in path
 	if(!p){
 		curDirectory = fsysFatDirectory(path); //no, then search in root dir
 		if(curDirectory.flags == FS_FILE) 
@@ -213,7 +213,7 @@ FILE fsysFatOpen(const char* FileName){
 		char pathname[16];
 		int i = 0;
 		for(i=0;i<16;i++){  // get path name
-			if(p[i]=='\\' || p[i]=='\0') // if another '\' or end of line is reached, we are done
+			if(p[i]=='/' || p[i]=='\0') // if another '\' or end of line is reached, we are done
 				break;
 
 			pathname[i]=p[i]; // copy path
@@ -237,7 +237,7 @@ FILE fsysFatOpen(const char* FileName){
 
 		
 		
-		p=strchr(p+1,'\\');
+		p=strchr(p+1,'/');
 		if(p)
 			p++;
 	}
@@ -251,11 +251,16 @@ FILE fsysFatOpen(const char* FileName){
 }
 
 // Mount the filesystem
-void fsysFatMount(){
-	PBOOTSECTOR bootsector; // boot sect infos
-	bootsector = (PBOOTSECTOR) floppydisk_read_sector(0); // Read the boot sector
+void fsysFatMount(unsigned char deviceID){
+	
+	volRegisterFileSystem(&_FSysFat,deviceID); // Register fs to volume manager
 
+	PBOOTSECTOR bootsector; // boot sect infos
+	
+	bootsector = (PBOOTSECTOR) floppydisk_read_sector(0); // Read the boot sector
+	
 	_MountInfo.numSectors = bootsector->Bpb.NumSectors;
+	
 	_MountInfo.fatOffset = 1;
 	_MountInfo.fatSize = bootsector->Bpb.SectorsPerFat;
 	_MountInfo.fatEntrySize = 8;
@@ -263,17 +268,20 @@ void fsysFatMount(){
 	_MountInfo.rootOffset = (bootsector->Bpb.NumberOfFats * bootsector->Bpb.SectorsPerFat)+1;
 	_MountInfo.rootSize = (bootsector->Bpb.NumDirEntries * 32 ) / bootsector->Bpb.BytesPerSector;
 }
+void fsysFatReadDirectory(const char* DirectoryName){
+	// TODO: read dirent for 'ls' command	
+	return;
+}
 
 // Init FS
-void fsysFatInit(){
+void fsysFatInit(unsigned char deviceID){
 	strcpy(_FSysFat.Name,"FAT12");
-	_FSysFat.Directory = fsysFatDirectory;
+	_FSysFat.Directory = fsysFatReadDirectory;
 	_FSysFat.Mount = fsysFatMount;
 	_FSysFat.Open = fsysFatOpen;
 	_FSysFat.Read = fsysFatRead;
 	_FSysFat.Close = fsysFatClose;
 
-	volRegisterFileSystem(&_FSysFat,0); // Register fs to volume manager
-
-	fsysFatMount(); // mount fs
+	fsysFatMount(deviceID); // mount fs
+	
 }

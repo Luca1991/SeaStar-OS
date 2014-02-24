@@ -25,27 +25,23 @@
 
 // GDT descriptor granularity bit flags!
 
-#define I86_GDT_GRAND_LIMITHI_MASK      0x0f		// 00001111	Masks out LimitHi (High 4 bits of limit)
+#define I86_GDT_GRAN_LIMITHI_MASK      0x0f		// 00001111	Masks out LimitHi (High 4 bits of limit)
 
-#define I86_GDT_GRAND_OS		0x10		// 00010000 	Set OS defined bit
+#define I86_GDT_GRAN_OS		0x10		// 00010000 	Set OS defined bit
 
-#define I86_GDT_GRAND_32BIT		0x40		// 01000000	Set if 32 bit (Default is 16 bit)
+#define I86_GDT_GRAN_32BIT		0x40		// 01000000	Set if 32 bit (Default is 16 bit)
 
-#define I86_GDT_GRAND_4K		0x80		// 10000000	4KB Granularity
+#define I86_GDT_GRAN_4K		0x80		// 10000000	4KB Granularity
 
 
 
 #define __packed
 struct gdt_descriptor{
-	
 	uint16_t	limit;		// Bits 0-15 Segment Limit
-
 	uint16_t	baseLo;		// Bits 0-23 of
 	uint8_t		baseMid;	// Base Address
-	
-	uint8_t		flags;		// Descriptor access 
-	uint8_t		grand;		//	 flags
-
+	uint8_t		flags;		// Descriptor access flags
+	uint8_t		gran;		// Granularity
 	uint8_t		baseHi;		// Bits 24-32 of the base address
 }__attribute((packed));
 #undef __packed

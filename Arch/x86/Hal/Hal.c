@@ -15,7 +15,7 @@ int  hal_initialize(){
 	i86_pit_start_counter (100,I86_PIT_OCW_COUNTER_0, I86_PIT_OCW_MODE_SQUAREWAVEGEN);
 
 	//! enable hardware interrupts
-	enable_interrupt(); // This function is BUGGED!! We need to rewrite hw interrupts in ASM to avoid stack errors!
+	enable_interrupt(); 
 	
 	return 0;
 }
@@ -40,6 +40,7 @@ void  geninterrupt (int x) {
          : "al" /* clobbers %al */
          );
 }
+
 
 // Comunicate to the hal that the interrupt is done
 inline void interruptdone(unsigned int intno){
@@ -121,9 +122,15 @@ int get_tick_count(){
 
 // Sleep for ms
 void sleep (int ms){
-	int ticks = ms + get_tick_count();
-	while(ticks > get_tick_count());
+	
+	uint32_t ticks = ms + get_tick_count();
+	
+	while(ticks > i86_pit_get_tick_count());// kernelPrintf("test %d",1);
+
+ 		
 }
+
+
 
 void enter_usermode(){
       asm volatile("  \

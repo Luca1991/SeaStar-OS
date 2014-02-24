@@ -217,10 +217,15 @@ void floppydisk_control_motor(int b){
 	}		
 	
 	// Turn on/off the motor of the current floppy drive
-	if(b==1)
+	if(b==1){
+		
 		floppydisk_write_dor((uint8_t)(_CurrentDrive | motor | FLOPPYDISK_DOR_MASK_RESET | FLOPPYDISK_DOR_MASK_DMA));
-	else
+		
+	}
+	else{
 		floppydisk_write_dor(FLOPPYDISK_DOR_MASK_RESET);
+		
+	} 
 	// wait 20ms for the motor to spin up or turn off
 	sleep(20);
 }
@@ -397,7 +402,7 @@ uint8_t* floppydisk_read_sector(int secLBA){
 	
 	if(!check_fdd)
 		return 0;
-
+	
 	int head=0, track=0, sector=1;
 	floppydisk_lba2chs(secLBA,&head,&track,&sector); // convert LBA to CHS
 
@@ -407,6 +412,7 @@ uint8_t* floppydisk_read_sector(int secLBA){
 		return 0;
 
 	floppydisk_read_sector_imp((uint8_t)head,(uint8_t)track,(uint8_t)sector); // read the sector
+
 	floppydisk_control_motor(0); // turn off motor
 	
 	return (uint8_t*) DMA_BUFFER;
